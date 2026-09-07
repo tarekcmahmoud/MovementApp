@@ -28,31 +28,31 @@ real HTTP origin, so `file://` will not work.
 The app has to be served over HTTPS to be installable. GitHub Pages is free and
 enough.
 
-**1. Create an empty repo.** Go to <https://github.com/new>, name it
-`bodyweight-ladders`, and create it **without** a README or .gitignore. Public or
-private both work — Pages needs Public on a free account.
+Deployed from <https://github.com/tarekcmahmoud/MovementApp> (public, so Pages
+works on a free account). The remote is already configured over HTTPS, because
+Git Credential Manager can sign you in through a browser — no SSH key needed.
 
-**2. Push this folder to it.** From the project directory, substituting your
-username:
+**1. Push.** From the project directory:
 
 ```bash
-git remote add origin https://github.com/YOUR-USERNAME/bodyweight-ladders.git
-git branch -M main
 git push -u origin main
 ```
 
-Git for Windows will open a browser window to sign you in to GitHub the first
-time. Do that yourself — never paste a token or password into a chat.
+A browser window opens to sign you in to GitHub the first time. Do that
+yourself — never paste a token or password into a chat.
 
-**3. Turn on Pages.** In the repo: **Settings → Pages**. Under "Build and
+**2. Turn on Pages.** In the repo: **Settings → Pages**. Under "Build and
 deployment", set Source to **Deploy from a branch**, branch **main**, folder
 **/ (root)**, and Save. First build takes a minute or two.
 
-Your URL will be:
+The app then lives at:
 
 ```
-https://YOUR-USERNAME.github.io/bodyweight-ladders/
+https://tarekcmahmoud.github.io/MovementApp/
 ```
+
+Serving from a subdirectory works because `manifest.webmanifest` and `sw.js` use
+only relative paths. Don't change them to absolute ones.
 
 **4. Install it on the phone.** Open that URL in **Chrome on Android**, then
 either tap the "Install" prompt, or use **⋮ → Add to Home screen → Install**.
