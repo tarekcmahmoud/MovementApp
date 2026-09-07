@@ -17,9 +17,9 @@ async function initChart(){
   if (!res.ok) throw new Error("chart.json returned " + res.status);
   CHART = await res.json();
 
-  // normalise ["name", flag] and "name" into objects
+  // normalise ["name", milestone, tier] into objects
   CHART.categories.forEach(g => (g.ladders||[]).forEach(l =>
-    l.m = l.m.map(x => Array.isArray(x) ? {n:x[0], ms:true} : {n:x, ms:false})
+    l.m = l.m.map(x => ({ n:x[0], ms:!!x[1], tier:x[2] || null }))
   ));
 
   DATA = [{ g:"Priority", next:true }, ...CHART.categories];
@@ -32,6 +32,13 @@ async function initChart(){
   )));
   byKey = Object.fromEntries(MOVES.map(m => [m.key, m]));
 }
+
+// The chart's four difficulty tiers, recovered from cell colour. Shown as a
+// single muted letter so a rung stays readable at phone width; the footer
+// carries the key. Straight Bar Dip isn't on the source chart, so it has none.
+const TIER_ABBR = { Beginner:"B", Intermediate:"I", Advanced:"A", Elite:"E" };
+const tierTag = t =>
+  t && TIER_ABBR[t] ? `<span class="tier" title="${esc(t)}">${TIER_ABBR[t]}</span>` : "";
 
 const DYN = /push up|pull up|pullover|pullout|\brow\b|\bdip\b|dips|squat|raise|curl|ab wheel|rollout|press|muscle up|crunch|leg lift|step up|deadlift|knees to chest|360|scapular|ice cream|to inverted|to handstand|lower to|to bl|\bpu\b|hlr/i;
 const STAT = /hold|hang|lever|planche|flag|l-sit|v-sit|manna|handstand|\bhs\b|plank|bridge|stand|lean|cross|maltese|skin the cat|frog|crane|crow|arch body/i;
@@ -177,7 +184,7 @@ function ladderEl(g, l){
     b.type = "button";
     b.className = "rung" + (mv.ms?" ms":"") + (i < lv ? " done" : i === lv ? " next" : "");
     b.setAttribute("aria-pressed", i < lv);
-    b.innerHTML = `<span class="t">${esc(mv.n)}</span><span class="rx">${target(mv.n)}</span>`;
+    b.innerHTML = `<span class="t">${esc(mv.n)}</span>${tierTag(mv.tier)}<span class="rx">${target(mv.n)}</span>`;
     b.onclick = () => tap(key, i);
     lad.appendChild(b);
   });
@@ -288,7 +295,7 @@ function goalEl(k, markedNext){
       const isNow = first;
       first = false;
       b.className = "step" + (rg.ms ? " ms" : "") + (isNow ? " now" : "");
-      b.innerHTML = `<span class="t">${esc(rg.n)}</span><span class="rx">${target(rg.n)}</span>`;
+      b.innerHTML = `<span class="t">${esc(rg.n)}</span>${tierTag(rg.tier)}<span class="rx">${target(rg.n)}</span>`;
       b.onclick = () => tap(id(leg.g, leg.l), rg.i);
       col.appendChild(b);
     });

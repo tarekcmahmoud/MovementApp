@@ -87,10 +87,16 @@ keep serving the cached shell and will not see the update.
 
 ## Provenance, and what not to trust
 
-Some of `chart.json` is transcribed from the published source and some is
-inferred or invented. **Milestone flags are placeholders, not real data**, and the
-chart's four difficulty tiers were never captured. Both are carried by cell colour
-in the original sheet.
+`chart.json` is not uniform in quality. Exercise names and ladder ordering are
+transcribed from the published chart and verified. Prerequisite links are one
+person's reading of the chart's connector lines. Rep and hold targets are not on
+the chart at all — they're applied by rule, by regex on the exercise name, and
+they misclassify explosive and skill work.
+
+The four **difficulty tiers** and the **milestone flags** were recovered from the
+source spreadsheet by `tools/apply-sheet-data.ps1`: tiers from the fill colour of
+each exercise's dot (solid), milestones from those names being set in bold (a good
+inference, not a transcription).
 
 Read [CLAUDE.md](CLAUDE.md) before editing the chart, and
 [docs/HANDOVER.md](docs/HANDOVER.md) for why the app is shaped the way it is.

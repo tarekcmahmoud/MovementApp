@@ -2,7 +2,7 @@
    All paths are relative so this works unchanged whether the app is served from
    a domain root or from a GitHub Pages subdirectory. Bump CACHE on every deploy
    or returning phones will keep serving the old shell. */
-const CACHE = "bwf-ladders-v1";
+const CACHE = "bwf-ladders-v2";
 
 const SHELL = [
   "./",

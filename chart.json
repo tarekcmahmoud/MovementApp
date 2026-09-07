@@ -10,62 +10,64 @@
       "Antranik"
     ],
     "sourceSheet": "https://docs.google.com/spreadsheets/d/1a8tlZ-zbF695HA3Lmm20OIYeYYxo1lmUOczUXKLoL4s/edit",
-    "schema": "A rung is either \"Name\" or [\"Name\", 1] where 1 marks a milestone. Prerequisites are [Category, Ladder, Move] triples and may cross categories.",
-    "provenance": "Per-field confidence is documented in CLAUDE.md. Read it before editing this file. Milestone flags are LOW-confidence placeholders, NOT transcribed from the source chart."
+    "schema": "A rung is [\"Name\", milestone(0|1), \"tier\"]. Tier is Beginner|Intermediate|Advanced|Elite, or null where the source chart has no entry. Prerequisites are [Category, Ladder, Move] triples and may cross categories.",
+    "tiers": ["Beginner", "Intermediate", "Advanced", "Elite"],
+    "provenance": "Tiers are the fill colour of each exercise dot in the source sheet - recovered, high confidence. Milestones are the source sheet BOLD names - recovered by inference, medium-high confidence; the legend defines milestone as a grey dot but no grey dot exists in any sheet version. See CLAUDE.md before editing.",
+    "recoveredBy": "tools/apply-sheet-data.ps1"
   },
   "categories": [
     { "g": "Horizontal pull", "ladders": [
-      { "n": "Rows", "m": ["Vertical Row","Incline Row",["Row",1],"Wide Row","Archer Row","Archer-In Row","Straight One Arm Row",["One Arm Row",1]] },
-      { "n": "Front lever rows", "from": [["Horizontal pull","Front lever","Tuck Front Lever"]], "m": ["Tuck Ice Cream Maker","Tuck FL Row","Adv Tuck FL Row","Straddle FL Row",["Front Lever Row",1]] },
-      { "n": "Back lever", "m": ["German Hang","Tuck Skin the Cat","Adv Tuck Skin the Cat","Pike Skin the Cat",["Tuck Back Lever",1],"Adv Tuck Back Lever","One Leg Back Lever","Straddle Back Lever",["Back Lever",1],"Back Lever Pullout","German Hang Pullout","Bent Arm Pull Up to BL","Handstand Lower to BL"] },
-      { "n": "Front lever", "m": ["L-Hang",["Tuck Front Lever",1],"Adv Tuck Front Lever","One Leg Front Lever","Straddle Front Lever",["Front Lever",1],"FL to Inverted","Hanging Pull FL to Inverted","360° Pull"] },
-      { "n": "Iron cross", "from": [["Horizontal pull","Back lever","Back Lever"],["Horizontal pull","Front lever","One Leg Front Lever"],["Dips & L-sit","Ring dip","RTO 75° Dip"],["Dips & L-sit","L-sit to manna","45° V-Sit"],["Handstand","Rings","Ring Strap HS PU"],["Planche","Planche","Adv Tuck Planche"]], "m": ["Iron Cross Progression",["Iron Cross",1],"Iron Cross to Back Lever"] }
+      { "n": "Rows", "m": [["Vertical Row",0,"Beginner"],["Incline Row",0,"Beginner"],["Row",1,"Beginner"],["Wide Row",0,"Beginner"],["Archer Row",0,"Beginner"],["Archer-In Row",0,"Intermediate"],["Straight One Arm Row",0,"Intermediate"],["One Arm Row",1,"Intermediate"]] },
+      { "n": "Front lever rows", "from": [["Horizontal pull","Front lever","Tuck Front Lever"]], "m": [["Tuck Ice Cream Maker",0,"Intermediate"],["Tuck FL Row",0,"Intermediate"],["Adv Tuck FL Row",0,"Intermediate"],["Straddle FL Row",0,"Advanced"],["Front Lever Row",1,"Advanced"]] },
+      { "n": "Back lever", "m": [["German Hang",0,"Beginner"],["Tuck Skin the Cat",0,"Beginner"],["Adv Tuck Skin the Cat",0,"Beginner"],["Pike Skin the Cat",1,"Beginner"],["Tuck Back Lever",0,"Beginner"],["Adv Tuck Back Lever",0,"Beginner"],["One Leg Back Lever",0,"Intermediate"],["Straddle Back Lever",0,"Intermediate"],["Back Lever",1,"Intermediate"],["Back Lever Pullout",0,"Intermediate"],["German Hang Pullout",0,"Advanced"],["Bent Arm Pull Up to BL",0,"Advanced"],["Handstand Lower to BL",1,"Advanced"]] },
+      { "n": "Front lever", "m": [["L-Hang",0,"Beginner"],["Tuck Front Lever",0,"Beginner"],["Adv Tuck Front Lever",0,"Intermediate"],["One Leg Front Lever",0,"Intermediate"],["Straddle Front Lever",0,"Intermediate"],["Front Lever",1,"Intermediate"],["FL to Inverted",0,"Advanced"],["Hanging Pull FL to Inverted",0,"Advanced"],["360° Pull",1,"Advanced"]] },
+      { "n": "Iron cross", "from": [["Horizontal pull","Back lever","Back Lever"],["Horizontal pull","Front lever","One Leg Front Lever"],["Dips & L-sit","Ring dip","RTO 75° Dip"],["Dips & L-sit","L-sit to manna","45° V-Sit"],["Handstand","Rings","Ring Strap HS PU"],["Planche","Planche","Adv Tuck Planche"]], "m": [["Iron Cross Progression",0,"Advanced"],["Iron Cross",1,"Advanced"],["Iron Cross to Back Lever",0,"Advanced"]] }
     ]},
     { "g": "Vertical pull", "ladders": [
-      { "n": "Pull up", "m": ["Scapular Pull","Arch Hang","Pull Up Negative",["Pull Up",1],"L-Sit Pull Up","Chest to Bar Pull Up","Ring L-Sit Pull Up"] },
-      { "n": "Muscle up", "from": [["Vertical pull","Pull up","Pull Up"]], "m": ["Pullover","Muscle Up Negative","Kipping Muscle Up",["Muscle Up",1],"Wide Muscle Up","Strict Bar Muscle Up","L-Sit Muscle Up"] },
-      { "n": "One arm pull up", "from": [["Vertical pull","Pull up","Pull Up"]], "m": ["Ring Wide Pull Up","Ring Wide L-Pull Up","Typewriter Pull Up","Archer Pull Up","OA Pull Up Negative",["One Arm Pull Up",1],"OA Straight Muscle Up","High One Arm Pull Up"] },
-      { "n": "Human flag", "from": [["Vertical pull","Pull up","Pull Up"]], "m": ["Side Plank","Support Press","Tuck Flag","Vertical Flag","Adv Tuck Flag","Straddle Flag",["Human Flag",1]] }
+      { "n": "Pull up", "m": [["Scapular Pull",0,"Beginner"],["Arch Hang",0,"Beginner"],["Pull Up Negative",0,"Beginner"],["Pull Up",1,"Beginner"],["L-Sit Pull Up",0,"Beginner"],["Chest to Bar Pull Up",0,"Beginner"],["Ring L-Sit Pull Up",0,"Beginner"]] },
+      { "n": "Muscle up", "from": [["Vertical pull","Pull up","Pull Up"]], "m": [["Pullover",0,"Intermediate"],["Muscle Up Negative",0,"Beginner"],["Kipping Muscle Up",0,"Beginner"],["Muscle Up",1,"Intermediate"],["Wide Muscle Up",0,"Intermediate"],["Strict Bar Muscle Up",0,"Intermediate"],["L-Sit Muscle Up",0,"Intermediate"]] },
+      { "n": "One arm pull up", "from": [["Vertical pull","Pull up","Pull Up"]], "m": [["Ring Wide Pull Up",0,"Intermediate"],["Ring Wide L-Pull Up",0,"Intermediate"],["Typewriter Pull Up",0,"Intermediate"],["Archer Pull Up",0,"Intermediate"],["OA Pull Up Negative",0,"Intermediate"],["One Arm Pull Up",1,"Advanced"],["OA Straight Muscle Up",1,"Advanced"],["High One Arm Pull Up",1,"Elite"]] },
+      { "n": "Human flag", "from": [["Vertical pull","Pull up","Pull Up"]], "m": [["Side Plank",0,"Beginner"],["Support Press",0,"Beginner"],["Tuck Flag",0,"Beginner"],["Vertical Flag",0,"Intermediate"],["Adv Tuck Flag",0,"Intermediate"],["Straddle Flag",0,"Intermediate"],["Human Flag",1,"Intermediate"]] }
     ]},
     { "g": "Dips & L-sit", "ladders": [
-      { "n": "Dip", "m": ["Support Hold","Dip Negative",["Dip",1],"Straight Bar Dip","Tuck L-Sit Dip","L-Sit Dip"] },
-      { "n": "Ring dip", "from": [["Dips & L-sit","Dip","Dip"]], "m": ["Ring Support Hold","RTO Support Hold","Ring Dip Negative",["Ring Dip",1],"RTO Dip","Bulgarian Dip","Ring L-Sit Dip","Ring Wide Dip","RTO 45° Dip","RTO 75° Dip","RTO 90° Dip"] },
-      { "n": "L-sit to manna", "from": [["Dips & L-sit","Dip","Support Hold"]], "m": ["Foot Supported L-Sit","One Leg L-Sit","Tuck L-Sit","One Leg Bent L-Sit",["L-Sit",1],"Straddle L-Sit","RTO L-Sit","45° V-Sit","90° V-Sit","120° V-Sit","140° V-Sit","155° V-Sit","170° V-Sit",["Manna",1]] },
-      { "n": "Bridge", "m": ["Reverse Plank","Shoulder Bridge","Table Bridge","Angled Bridge","Head Bridge",["Bridge / Wheel",1],"Decline Bridge","One Leg Bridge","Decline OL Bridge","OA Head Bridge","One Arm Bridge"] }
+      { "n": "Dip", "m": [["Support Hold",0,"Beginner"],["Dip Negative",0,"Beginner"],["Dip",1,"Beginner"],["Straight Bar Dip",0,null],["Tuck L-Sit Dip",0,"Beginner"],["L-Sit Dip",0,"Beginner"]] },
+      { "n": "Ring dip", "from": [["Dips & L-sit","Dip","Dip"]], "m": [["Ring Support Hold",0,"Beginner"],["RTO Support Hold",0,"Beginner"],["Ring Dip Negative",0,"Beginner"],["Ring Dip",1,"Beginner"],["RTO Dip",0,"Beginner"],["Bulgarian Dip",0,"Beginner"],["Ring L-Sit Dip",1,"Intermediate"],["Ring Wide Dip",0,"Intermediate"],["RTO 45° Dip",0,"Intermediate"],["RTO 75° Dip",0,"Intermediate"],["RTO 90° Dip",0,"Advanced"]] },
+      { "n": "L-sit to manna", "from": [["Dips & L-sit","Dip","Support Hold"]], "m": [["Foot Supported L-Sit",0,"Beginner"],["One Leg L-Sit",0,"Beginner"],["Tuck L-Sit",0,"Beginner"],["One Leg Bent L-Sit",0,"Beginner"],["L-Sit",1,"Beginner"],["Straddle L-Sit",0,"Beginner"],["RTO L-Sit",0,"Intermediate"],["45° V-Sit",1,"Intermediate"],["90° V-Sit",0,"Intermediate"],["120° V-Sit",0,"Advanced"],["140° V-Sit",0,"Advanced"],["155° V-Sit",0,"Advanced"],["170° V-Sit",0,"Advanced"],["Manna",1,"Elite"]] },
+      { "n": "Bridge", "m": [["Reverse Plank",0,"Beginner"],["Shoulder Bridge",0,"Beginner"],["Table Bridge",0,"Beginner"],["Angled Bridge",0,"Beginner"],["Head Bridge",0,"Beginner"],["Bridge / Wheel",1,"Beginner"],["Decline Bridge",0,"Beginner"],["One Leg Bridge",0,"Beginner"],["Decline OL Bridge",0,"Beginner"],["OA Head Bridge",0,"Intermediate"],["One Arm Bridge",1,"Intermediate"]] }
     ]},
     { "g": "Handstand", "ladders": [
-      { "n": "Handstand", "m": ["Wall Plank","Wall Headstand","Wall Handstand",["Handstand",1],"Tuck Handstand"] },
-      { "n": "Handstand push up", "from": [["Handstand","Handstand","Wall Handstand"]], "m": ["Wall Headstand PU Negative","Wall Headstand PU","Wall HS PU","Headstand PU",["HS PU",1]] },
-      { "n": "Rings", "from": [["Handstand","Handstand","Handstand"]], "m": ["Ring Shoulder Stand",["Ring Handstand",1],"Ring Wide HS PU","Ring Strap HS PU","Ring HS Push Up"] },
-      { "n": "One arm handstand", "from": [["Handstand","Handstand","Handstand"]], "m": ["OA HS Progression","Straddle OA Handstand",["Straight OA Handstand",1],"OA Elbow Lever Press to OA HS"] }
+      { "n": "Handstand", "m": [["Wall Plank",0,"Beginner"],["Wall Headstand",0,"Beginner"],["Wall Handstand",0,"Beginner"],["Handstand",1,"Beginner"],["Tuck Handstand",0,"Intermediate"]] },
+      { "n": "Handstand push up", "from": [["Handstand","Handstand","Wall Handstand"]], "m": [["Wall Headstand PU Negative",0,"Beginner"],["Wall Headstand PU",0,"Beginner"],["Wall HS PU",0,"Intermediate"],["Headstand PU",0,"Intermediate"],["HS PU",1,"Intermediate"]] },
+      { "n": "Rings", "from": [["Handstand","Handstand","Handstand"]], "m": [["Ring Shoulder Stand",0,"Intermediate"],["Ring Handstand",1,"Intermediate"],["Ring Wide HS PU",0,"Intermediate"],["Ring Strap HS PU",0,"Intermediate"],["Ring HS Push Up",1,"Advanced"]] },
+      { "n": "One arm handstand", "from": [["Handstand","Handstand","Handstand"]], "m": [["OA HS Progression",0,"Intermediate"],["Straddle OA Handstand",1,"Advanced"],["Straight OA Handstand",0,"Advanced"],["OA Elbow Lever Press to OA HS",1,"Elite"]] }
     ]},
     { "g": "Horizontal push", "ladders": [
-      { "n": "Push up", "m": ["Incline Push Up",["Push Up",1],"Diamond Push Up","Pseudo Planche Push Up","Pike Push Up","Decline Pike Push Up"] },
-      { "n": "Ring push up", "from": [["Horizontal push","Push up","Push Up"]], "m": ["Ring Wide Push Up","Ring Push Up","Archer Push Up","Ring Archer Push Up","RTO Push Up","RTO Archer Push Up","RTO PP Push Up"] },
-      { "n": "One arm push up", "from": [["Horizontal push","Ring push up","RTO Push Up"]], "m": ["Incline OA Push Up","Straddle OA Push Up","Ring Straight OA Push Up",["One Arm Push Up",1],"Ring OA Push Up"] },
-      { "n": "Maltese", "from": [["Horizontal push","Push up","Pseudo Planche Push Up"]], "m": ["Wall PP Push Up","Ring Wall PP Push Up","Wall Maltese Push Up","RTO Maltese Push Up","Ring Wall Maltese Push Up","Inverted Cross",["Maltese",1]] },
-      { "n": "Elbow lever", "from": [["Core","Plank","Plank"]], "m": ["Straddle Elbow Lever","One Leg Elbow Lever",["Elbow Lever",1],"Ring Elbow Lever","OA Straddle Elbow Lever","One Arm Elbow Lever"] }
+      { "n": "Push up", "m": [["Incline Push Up",0,"Beginner"],["Push Up",1,"Beginner"],["Diamond Push Up",0,"Beginner"],["Pseudo Planche Push Up",0,"Beginner"],["Pike Push Up",0,"Beginner"],["Decline Pike Push Up",0,"Beginner"]] },
+      { "n": "Ring push up", "from": [["Horizontal push","Push up","Push Up"]], "m": [["Ring Wide Push Up",0,"Beginner"],["Ring Push Up",1,"Beginner"],["Archer Push Up",0,"Beginner"],["Ring Archer Push Up",0,"Beginner"],["RTO Push Up",0,"Intermediate"],["RTO Archer Push Up",0,"Intermediate"],["RTO PP Push Up",0,"Intermediate"]] },
+      { "n": "One arm push up", "from": [["Horizontal push","Ring push up","RTO Push Up"]], "m": [["Incline OA Push Up",0,"Intermediate"],["Straddle OA Push Up",0,"Intermediate"],["Ring Straight OA Push Up",0,"Intermediate"],["One Arm Push Up",1,"Intermediate"],["Ring OA Push Up",1,"Advanced"]] },
+      { "n": "Maltese", "from": [["Horizontal push","Push up","Pseudo Planche Push Up"]], "m": [["Wall PP Push Up",0,"Advanced"],["Ring Wall PP Push Up",0,"Advanced"],["Wall Maltese Push Up",0,"Advanced"],["RTO Maltese Push Up",0,"Advanced"],["Ring Wall Maltese Push Up",1,"Elite"],["Inverted Cross",1,"Elite"],["Maltese",1,"Elite"]] },
+      { "n": "Elbow lever", "from": [["Core","Plank","Plank"]], "m": [["Straddle Elbow Lever",0,"Beginner"],["One Leg Elbow Lever",0,"Beginner"],["Elbow Lever",1,"Beginner"],["Ring Elbow Lever",0,"Intermediate"],["OA Straddle Elbow Lever",0,"Intermediate"],["One Arm Elbow Lever",1,"Intermediate"]] }
     ]},
     { "g": "Planche", "ladders": [
-      { "n": "Planche", "from": [["Core","Plank","Plank"]], "m": ["Planche Lean","Frog Stand / Crow Pose","Straight Arm Frog Stand / Crane Pose",["Tuck Planche",1],"Adv Tuck Planche","Straddle Planche","One Leg Planche",["Planche",1]] },
-      { "n": "Planche push up", "from": [["Planche","Planche","Tuck Planche"]], "m": ["Tuck Planche Push Up","Adv Tuck Planche Push Up","Straddle Planche Push Up","One Leg Planche Push Up",["Planche Push Up",1],"Straight Arm Planche to Handstand"] },
-      { "n": "Ring planche", "from": [["Planche","Planche","Tuck Planche"]], "m": ["Ring Frog Stand","Ring SA Frog Stand","Ring Tuck Planche","Ring Adv Tuck Planche","Ring Straddle Planche","Ring One Leg Planche",["Ring Planche",1]] },
-      { "n": "Ring planche push up", "from": [["Planche","Ring planche","Ring Tuck Planche"]], "m": ["Ring Tuck Planche PU","Ring Adv Tuck Planche PU","Ring Straddle Planche PU","Ring OL Planche PU","Ring Planche Push Up"] }
+      { "n": "Planche", "from": [["Core","Plank","Plank"]], "m": [["Planche Lean",0,"Beginner"],["Frog Stand / Crow Pose",1,"Beginner"],["Straight Arm Frog Stand / Crane Pose",0,"Beginner"],["Tuck Planche",0,"Intermediate"],["Adv Tuck Planche",0,"Intermediate"],["Straddle Planche",1,"Intermediate"],["One Leg Planche",0,"Advanced"],["Planche",1,"Advanced"]] },
+      { "n": "Planche push up", "from": [["Planche","Planche","Tuck Planche"]], "m": [["Tuck Planche Push Up",0,"Intermediate"],["Adv Tuck Planche Push Up",0,"Intermediate"],["Straddle Planche Push Up",1,"Advanced"],["One Leg Planche Push Up",0,"Advanced"],["Planche Push Up",1,"Elite"],["Straight Arm Planche to Handstand",0,"Advanced"]] },
+      { "n": "Ring planche", "from": [["Planche","Planche","Tuck Planche"]], "m": [["Ring Frog Stand",0,"Beginner"],["Ring SA Frog Stand",0,"Intermediate"],["Ring Tuck Planche",0,"Intermediate"],["Ring Adv Tuck Planche",0,"Intermediate"],["Ring Straddle Planche",0,"Advanced"],["Ring One Leg Planche",0,"Advanced"],["Ring Planche",1,"Elite"]] },
+      { "n": "Ring planche push up", "from": [["Planche","Ring planche","Ring Tuck Planche"]], "m": [["Ring Tuck Planche PU",0,"Intermediate"],["Ring Adv Tuck Planche PU",0,"Advanced"],["Ring Straddle Planche PU",0,"Advanced"],["Ring OL Planche PU",0,"Elite"],["Ring Planche Push Up",1,"Elite"]] }
     ]},
     { "g": "Core", "ladders": [
-      { "n": "Plank", "m": [["Plank",1],"Straddle One Arm Plank","One Arm Plank","OA One Leg Plank"] },
-      { "n": "Extension", "m": ["Reverse Hyperextension","Hyperextension","Arch Body Hold"] },
-      { "n": "Anti-rotation", "m": ["Banded Pallof Press","Ring Pallof Press"] },
-      { "n": "Compression", "m": [["Hollow Hold",1],"Tuck Up Crunch","Seated Pike Leg Lift","Hanging Knees to Chest","Hanging Leg Raise to Bar","Ankle Weight HLR","One Arm HLR"] },
-      { "n": "Dragon flag", "from": [["Core","Compression","Hanging Leg Raise to Bar"]], "m": ["Tuck Dragon Flag Negative","Adv Tuck Dragon Flag","Straddle / One Leg Dragon Flag",["Dragon Flag",1],"Ankle Weight Dragon Flag","One Arm Dragon Flag","One Leg Dragon Press","Dragon Press","One Arm Dragon Press"] },
-      { "n": "Ab wheel", "from": [["Core","Plank","Plank"]], "m": ["Ring Ab Rollout","Knees Ab Wheel","Straight Leg Ab Wheel Ramp","Straight Leg Ab Wheel Negative",["Straight Leg Ab Wheel",1],"Weighted Ab Wheel","One Arm Ab Wheel"] }
+      { "n": "Plank", "m": [["Plank",0,"Beginner"],["Straddle One Arm Plank",0,"Beginner"],["One Arm Plank",1,"Beginner"],["OA One Leg Plank",0,"Beginner"]] },
+      { "n": "Extension", "m": [["Reverse Hyperextension",0,"Beginner"],["Hyperextension",0,"Beginner"],["Arch Body Hold",0,"Beginner"]] },
+      { "n": "Anti-rotation", "m": [["Banded Pallof Press",0,"Beginner"],["Ring Pallof Press",0,"Beginner"]] },
+      { "n": "Compression", "m": [["Hollow Hold",0,"Beginner"],["Tuck Up Crunch",0,"Beginner"],["Seated Pike Leg Lift",0,"Beginner"],["Hanging Knees to Chest",0,"Beginner"],["Hanging Leg Raise to Bar",1,"Beginner"],["Ankle Weight HLR",0,"Beginner"],["One Arm HLR",0,"Beginner"]] },
+      { "n": "Dragon flag", "from": [["Core","Compression","Hanging Leg Raise to Bar"]], "m": [["Tuck Dragon Flag Negative",0,"Beginner"],["Adv Tuck Dragon Flag",0,"Beginner"],["Straddle / One Leg Dragon Flag",0,"Intermediate"],["Dragon Flag",1,"Intermediate"],["Ankle Weight Dragon Flag",0,"Intermediate"],["One Arm Dragon Flag",0,"Intermediate"],["One Leg Dragon Press",0,"Intermediate"],["Dragon Press",1,"Intermediate"],["One Arm Dragon Press",1,"Advanced"]] },
+      { "n": "Ab wheel", "from": [["Core","Plank","Plank"]], "m": [["Ring Ab Rollout",0,"Intermediate"],["Knees Ab Wheel",0,"Intermediate"],["Straight Leg Ab Wheel Ramp",0,"Intermediate"],["Straight Leg Ab Wheel Negative",0,"Intermediate"],["Straight Leg Ab Wheel",1,"Intermediate"],["Weighted Ab Wheel",0,"Advanced"],["One Arm Ab Wheel",1,"Advanced"]] }
     ]},
     { "g": "Legs", "ladders": [
-      { "n": "Squat", "m": ["Assisted Squat","Parallel Squat",["Full Squat",1],"Cossack Squat"] },
-      { "n": "Split squat & step up", "from": [["Legs","Squat","Full Squat"]], "m": ["Split Squat","Bulgarian Split Squat","Step Up","Deep Step Up"] },
-      { "n": "Pistol squat", "from": [["Legs","Squat","Full Squat"]], "m": ["Partial Pistol Squat","Assisted Pistol Squat",["Pistol Squat",1],"Weighted Pistol Squat","Natural One Leg Press","Elevated Friction Pistol Squat"] },
-      { "n": "Shrimp squat", "from": [["Legs","Squat","Full Squat"]], "m": ["Beginner Shrimp Squat","Intermediate Shrimp Squat",["Shrimp Squat",1],"Two Hand Shrimp Squat","Elevated 2H Shrimp Squat"] },
-      { "n": "Nordic curl", "m": ["One Leg Deadlift","90° Hip Nordic Curl","45° Hip Nordic Curl","Nordic Curl Negative",["Nordic Curl",1],"Nordic Curl Arms Overhead","Tuck One Leg Nordic Curl","One Leg Nordic Curl"] }
+      { "n": "Squat", "m": [["Assisted Squat",0,"Beginner"],["Parallel Squat",0,"Beginner"],["Full Squat",1,"Beginner"],["Cossack Squat",0,"Beginner"]] },
+      { "n": "Split squat & step up", "from": [["Legs","Squat","Full Squat"]], "m": [["Split Squat",0,"Beginner"],["Bulgarian Split Squat",0,"Beginner"],["Step Up",0,"Beginner"],["Deep Step Up",0,"Beginner"]] },
+      { "n": "Pistol squat", "from": [["Legs","Squat","Full Squat"]], "m": [["Partial Pistol Squat",0,"Beginner"],["Assisted Pistol Squat",0,"Beginner"],["Pistol Squat",1,"Beginner"],["Weighted Pistol Squat",0,"Intermediate"],["Natural One Leg Press",0,"Intermediate"],["Elevated Friction Pistol Squat",1,"Advanced"]] },
+      { "n": "Shrimp squat", "from": [["Legs","Squat","Full Squat"]], "m": [["Beginner Shrimp Squat",0,"Beginner"],["Intermediate Shrimp Squat",0,"Beginner"],["Shrimp Squat",1,"Intermediate"],["Two Hand Shrimp Squat",0,"Intermediate"],["Elevated 2H Shrimp Squat",0,"Intermediate"]] },
+      { "n": "Nordic curl", "m": [["One Leg Deadlift",0,"Beginner"],["90° Hip Nordic Curl",0,"Beginner"],["45° Hip Nordic Curl",0,"Beginner"],["Nordic Curl Negative",0,"Intermediate"],["Nordic Curl",1,"Intermediate"],["Nordic Curl Arms Overhead",0,"Intermediate"],["Tuck One Leg Nordic Curl",0,"Intermediate"],["One Leg Nordic Curl",1,"Advanced"]] }
     ]}
   ]
 }

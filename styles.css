@@ -214,3 +214,10 @@
   .save{margin-left:auto;font-variant-numeric:tabular-nums}
   @media (max-width:640px){ .split{grid-template-columns:1fr} .entry{flex-wrap:wrap} }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* difficulty tier, recovered from the source chart's cell colour.
+     Deliberately quiet: one muted letter, keyed in the footer. The palette
+     stays as it was — yellow means "your next step" and nothing else. */
+  .rung .tier,.step .tier{font-size:11px;font-weight:600;color:var(--muted);
+    opacity:.7;letter-spacing:.03em;flex:none;width:1ch;text-align:center}
+  .rung.done .tier,.rung.next .tier,.step.now .tier{color:var(--ink);opacity:.55}

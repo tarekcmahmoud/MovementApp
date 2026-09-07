@@ -15,20 +15,59 @@ as equally solid will quietly corrupt the app's meaning. Confidence per field:
 | Category grouping | The chart's column headers | **High** |
 | Prerequisite links (`from`) | Read from the chart's connector paths | **Medium** — the shape is right, exact branch points are one person's reading |
 | Iron Cross prerequisites | The chart highlights and labels these explicitly | **High** |
-| Milestone flags (`["Name", 1]`) | **Invented.** The chart marks milestones with coloured dots that did not survive text extraction | **Low — replace, do not build on** |
-| Difficulty tiers (Beginner/Intermediate/Advanced/Elite) | **Not implemented.** The chart colour-codes all four; that colour data was never captured | **Missing** |
+| Difficulty tiers (`["Name", ms, "Tier"]`) | Recovered from the fill colour of each exercise's dot cell in the source `.xlsx` | **High** — one dot per exercise, 243 of 244 matched |
+| Milestone flags (`["Name", 1, ...]`) | Recovered by inference: the source sheet sets milestone names in **bold** | **Medium-high** — see the note below |
 | Rep and hold targets | **Not on the chart at all.** Applied by rule from the Overcoming Gravity convention | Rule-derived, not per-exercise data |
 | Straight Bar Dip | Added on request, not on the original chart | Deliberate addition |
 
-Both gaps (milestones, tiers) are carried by **cell colour** in the original, so
-recovering them means an `.xlsx` export, not a CSV. The source sheet is public:
-`https://docs.google.com/spreadsheets/d/1a8tlZ-zbF695HA3Lmm20OIYeYYxo1lmUOczUXKLoL4s/edit`
-(`?format=xlsx` on the export endpoint preserves fills). reddit.com blocks
-automated fetching, so the wiki itself cannot be scraped.
+### How tiers and milestones were recovered
 
-Verified counts as of the port: **8 categories, 37 ladders, 244 rungs, 37
-milestones, 23 ladders with prerequisites.** Note that HANDOVER.md §4 says "34
-ladders" — that is wrong; it is 37. The "23 of" figure is correct.
+Both were reconstructed from the source `.xlsx` by `tools/apply-sheet-data.ps1`.
+The source sheet is public, and `?format=xlsx` on the export endpoint preserves
+cell fills (a CSV export would lose them):
+`https://docs.google.com/spreadsheets/d/1a8tlZ-zbF695HA3Lmm20OIYeYYxo1lmUOczUXKLoL4s/edit`
+reddit.com blocks automated fetching, so the wiki itself cannot be scraped.
+
+**Tiers — solid.** Every exercise on the chart has a `•` cell next to its name,
+and that cell's fill is the tier. The sheet's own legend gives the mapping:
+
+| Fill | Tier |
+|---|---|
+| `FFC5E0B3` light green | Beginner |
+| `FFB4C6E7` light blue | Intermediate |
+| `FFFFD965` gold | Advanced |
+| `FFF4B083` orange | Elite |
+
+**Milestones — an inference, so treat it as such.** The legend defines
+"Milestone" as a *grey* dot (`FFBFBFBF`), but **no grey dot appears anywhere** in
+v5.4, v5.3 or v5.2 — the legend entry is defined and never used. What does
+partition the exercises is **bold**: 46 bold names in v5.2, 49 in v5.3, 55 in
+v5.4. A curated list that grows each release, and which reads exactly like a
+milestone set (Pull Up, Dip, Push Up, Row, Muscle Up, Front Lever, Back Lever,
+Planche, Iron Cross, Manna, Handstand, Full Squat, Nordic Curl, Human Flag...).
+That is the basis for the flags. It is a good inference, not a transcription — if
+you can reach the author or a legible original, confirm it.
+
+Two things to know if you re-run the recovery:
+
+- The sheet abbreviates differently from `chart.json` and has two genuine typos,
+  "Tuck **Font** Lever" and "Straddle **Font** Lever". `apply-sheet-data.ps1`
+  carries an explicit alias table for the 10 names that don't normalise cleanly.
+- PowerShell 5.1 reads BOM-less files as ANSI, which double-encodes the degree
+  signs in `RTO 75° Dip` and `360° Pull` and silently breaks prerequisite
+  matching. The script forces UTF-8 on both read and write and stays pure ASCII
+  itself. **Keep it that way**, and check `grep -c 'Â' chart.json` is 0 after any
+  re-run.
+
+Verified counts: **8 categories, 37 ladders, 244 rungs, 58 milestones, 23
+ladders with prerequisites.** Tiers: Beginner 108, Intermediate 85, Advanced 40,
+Elite 10, plus Straight Bar Dip which has no tier because it is not on the source
+chart. Note that HANDOVER.md §4 says "34 ladders" — that is wrong; it is 37. The
+"23 of" figure is correct.
+
+The recovery replaced the prototype's 37 guessed milestones: **31 kept, 27 added,
+6 dropped.** Only metadata changed — no rung was renamed, added, removed or
+reordered — so stored progress counts remain valid.
 
 ## Layout
 
@@ -44,9 +83,9 @@ ladders" — that is wrong; it is 37. The "23 of" figure is correct.
 | `tools/serve.ps1` | Local static server. There is no Node or Python on the dev machine. |
 | `tools/make-icons.ps1` | Regenerates the PWA icons via System.Drawing. |
 
-`chart.json` rungs use the prototype's compact form — `"Name"` or `["Name", 1]`
-where `1` marks a milestone — because `app.js` still runs the original
-`normalise` step over them. Prerequisites are `[Category, Ladder, Move]` triples
+`chart.json` rungs are `["Name", milestone(0|1), "Tier"]`, normalised into
+`{n, ms, tier}` by `initChart()`. Tier is `null` only for Straight Bar Dip, which
+is not on the source chart. Prerequisites are `[Category, Ladder, Move]` triples
 and may cross categories.
 
 ## Design constraints worth preserving
@@ -67,7 +106,8 @@ and may cross categories.
 
 ## Known issues carried over from the prototype
 
-1. Milestones are guesses; difficulty tiers are absent. See the table above.
+1. Milestone flags are inferred from bold in the source sheet, not transcribed.
+   See the recovery notes above. Tiers are solid.
 2. Progress stored as a count, so mid-ladder insertions shift meaning.
 3. Target parsing is loose — it reads `3×8`, `30s`, and bare numbers. Anything
    freeform (`AMRAP`, `5-3-1`) logs fine but silently disables the move-up check.
