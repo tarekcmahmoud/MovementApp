@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bodyweight ladders</title>
+<meta name="description" content="A progression tracker for bodyweight strength training.">
+<meta name="theme-color" content="#E5E9E7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ladders">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<noscript><p style="padding:20px">This tracker needs JavaScript to run.</p></noscript>
+<div id="boot" style="padding:20px 18px;color:#7C8B8C">Loading…</div>
+<div class="wrap" id="wrap" style="display:none">
+  <header>
+    <h1>Bodyweight ladders</h1>
+    <p class="count" id="count"></p>
+  </header>
+
+  <section id="v-ladders">
+    <div class="meter"><i id="meter"></i></div>
+    <nav class="grp" id="tabs" role="tablist"></nav>
+    <div class="bar">
+      <p class="hint" id="hint"></p>
+      <label class="only" id="onlyWrap"><input type="checkbox" id="only"> Milestones only</label>
+    </div>
+    <div id="view" role="tabpanel"></div>
+  </section>
+
+  <section id="v-build" hidden>
+    <div class="split">
+      <aside>
+        <div class="rowhead"><h2>Workouts</h2><button class="btn mini" id="newW">New</button></div>
+        <ul class="wlist" id="wlist"></ul>
+      </aside>
+      <div class="editor" id="weditor"></div>
+    </div>
+  </section>
+
+  <section id="v-log" hidden>
+    <div id="logtop"></div>
+    <div id="nudge"></div>
+    <div class="rowhead" style="margin-top:34px"><h2>History</h2></div>
+    <div class="hist" id="hist"></div>
+  </section>
+
+  <footer>
+    <button id="reset" type="button">Clear everything</button>
+    <span class="key ladonly"><i></i> milestone</span>
+    <span class="ladonly">Faded ladders are waiting on a prerequisite.</span>
+    <span class="ladonly">Targets: 3&times;8 clean reps, or a 30&thinsp;s hold, then move up.</span>
+    <span class="save" id="save"></span>
+  </footer>
+</div>
+
+<nav class="tabbar" aria-label="Sections"><div class="inner" id="top" role="tablist"></div></nav>
+
+<script src="app.js"></script>
+</body>
+</html>

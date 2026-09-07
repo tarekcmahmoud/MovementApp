@@ -1,0 +1,71 @@
+{
+  "meta": {
+    "chart": "Bodyweight Fitness Progressions v5.4",
+    "author": "u/shellerik",
+    "published": "2019-03",
+    "derivedFrom": [
+      "Overcoming Gravity, 2nd ed. (Steven Low)",
+      "r/bodyweightfitness Recommended Routine",
+      "r/bodyweightfitness Exercise Wiki",
+      "Antranik"
+    ],
+    "sourceSheet": "https://docs.google.com/spreadsheets/d/1a8tlZ-zbF695HA3Lmm20OIYeYYxo1lmUOczUXKLoL4s/edit",
+    "schema": "A rung is either \"Name\" or [\"Name\", 1] where 1 marks a milestone. Prerequisites are [Category, Ladder, Move] triples and may cross categories.",
+    "provenance": "Per-field confidence is documented in CLAUDE.md. Read it before editing this file. Milestone flags are LOW-confidence placeholders, NOT transcribed from the source chart."
+  },
+  "categories": [
+    { "g": "Horizontal pull", "ladders": [
+      { "n": "Rows", "m": ["Vertical Row","Incline Row",["Row",1],"Wide Row","Archer Row","Archer-In Row","Straight One Arm Row",["One Arm Row",1]] },
+      { "n": "Front lever rows", "from": [["Horizontal pull","Front lever","Tuck Front Lever"]], "m": ["Tuck Ice Cream Maker","Tuck FL Row","Adv Tuck FL Row","Straddle FL Row",["Front Lever Row",1]] },
+      { "n": "Back lever", "m": ["German Hang","Tuck Skin the Cat","Adv Tuck Skin the Cat","Pike Skin the Cat",["Tuck Back Lever",1],"Adv Tuck Back Lever","One Leg Back Lever","Straddle Back Lever",["Back Lever",1],"Back Lever Pullout","German Hang Pullout","Bent Arm Pull Up to BL","Handstand Lower to BL"] },
+      { "n": "Front lever", "m": ["L-Hang",["Tuck Front Lever",1],"Adv Tuck Front Lever","One Leg Front Lever","Straddle Front Lever",["Front Lever",1],"FL to Inverted","Hanging Pull FL to Inverted","360° Pull"] },
+      { "n": "Iron cross", "from": [["Horizontal pull","Back lever","Back Lever"],["Horizontal pull","Front lever","One Leg Front Lever"],["Dips & L-sit","Ring dip","RTO 75° Dip"],["Dips & L-sit","L-sit to manna","45° V-Sit"],["Handstand","Rings","Ring Strap HS PU"],["Planche","Planche","Adv Tuck Planche"]], "m": ["Iron Cross Progression",["Iron Cross",1],"Iron Cross to Back Lever"] }
+    ]},
+    { "g": "Vertical pull", "ladders": [
+      { "n": "Pull up", "m": ["Scapular Pull","Arch Hang","Pull Up Negative",["Pull Up",1],"L-Sit Pull Up","Chest to Bar Pull Up","Ring L-Sit Pull Up"] },
+      { "n": "Muscle up", "from": [["Vertical pull","Pull up","Pull Up"]], "m": ["Pullover","Muscle Up Negative","Kipping Muscle Up",["Muscle Up",1],"Wide Muscle Up","Strict Bar Muscle Up","L-Sit Muscle Up"] },
+      { "n": "One arm pull up", "from": [["Vertical pull","Pull up","Pull Up"]], "m": ["Ring Wide Pull Up","Ring Wide L-Pull Up","Typewriter Pull Up","Archer Pull Up","OA Pull Up Negative",["One Arm Pull Up",1],"OA Straight Muscle Up","High One Arm Pull Up"] },
+      { "n": "Human flag", "from": [["Vertical pull","Pull up","Pull Up"]], "m": ["Side Plank","Support Press","Tuck Flag","Vertical Flag","Adv Tuck Flag","Straddle Flag",["Human Flag",1]] }
+    ]},
+    { "g": "Dips & L-sit", "ladders": [
+      { "n": "Dip", "m": ["Support Hold","Dip Negative",["Dip",1],"Straight Bar Dip","Tuck L-Sit Dip","L-Sit Dip"] },
+      { "n": "Ring dip", "from": [["Dips & L-sit","Dip","Dip"]], "m": ["Ring Support Hold","RTO Support Hold","Ring Dip Negative",["Ring Dip",1],"RTO Dip","Bulgarian Dip","Ring L-Sit Dip","Ring Wide Dip","RTO 45° Dip","RTO 75° Dip","RTO 90° Dip"] },
+      { "n": "L-sit to manna", "from": [["Dips & L-sit","Dip","Support Hold"]], "m": ["Foot Supported L-Sit","One Leg L-Sit","Tuck L-Sit","One Leg Bent L-Sit",["L-Sit",1],"Straddle L-Sit","RTO L-Sit","45° V-Sit","90° V-Sit","120° V-Sit","140° V-Sit","155° V-Sit","170° V-Sit",["Manna",1]] },
+      { "n": "Bridge", "m": ["Reverse Plank","Shoulder Bridge","Table Bridge","Angled Bridge","Head Bridge",["Bridge / Wheel",1],"Decline Bridge","One Leg Bridge","Decline OL Bridge","OA Head Bridge","One Arm Bridge"] }
+    ]},
+    { "g": "Handstand", "ladders": [
+      { "n": "Handstand", "m": ["Wall Plank","Wall Headstand","Wall Handstand",["Handstand",1],"Tuck Handstand"] },
+      { "n": "Handstand push up", "from": [["Handstand","Handstand","Wall Handstand"]], "m": ["Wall Headstand PU Negative","Wall Headstand PU","Wall HS PU","Headstand PU",["HS PU",1]] },
+      { "n": "Rings", "from": [["Handstand","Handstand","Handstand"]], "m": ["Ring Shoulder Stand",["Ring Handstand",1],"Ring Wide HS PU","Ring Strap HS PU","Ring HS Push Up"] },
+      { "n": "One arm handstand", "from": [["Handstand","Handstand","Handstand"]], "m": ["OA HS Progression","Straddle OA Handstand",["Straight OA Handstand",1],"OA Elbow Lever Press to OA HS"] }
+    ]},
+    { "g": "Horizontal push", "ladders": [
+      { "n": "Push up", "m": ["Incline Push Up",["Push Up",1],"Diamond Push Up","Pseudo Planche Push Up","Pike Push Up","Decline Pike Push Up"] },
+      { "n": "Ring push up", "from": [["Horizontal push","Push up","Push Up"]], "m": ["Ring Wide Push Up","Ring Push Up","Archer Push Up","Ring Archer Push Up","RTO Push Up","RTO Archer Push Up","RTO PP Push Up"] },
+      { "n": "One arm push up", "from": [["Horizontal push","Ring push up","RTO Push Up"]], "m": ["Incline OA Push Up","Straddle OA Push Up","Ring Straight OA Push Up",["One Arm Push Up",1],"Ring OA Push Up"] },
+      { "n": "Maltese", "from": [["Horizontal push","Push up","Pseudo Planche Push Up"]], "m": ["Wall PP Push Up","Ring Wall PP Push Up","Wall Maltese Push Up","RTO Maltese Push Up","Ring Wall Maltese Push Up","Inverted Cross",["Maltese",1]] },
+      { "n": "Elbow lever", "from": [["Core","Plank","Plank"]], "m": ["Straddle Elbow Lever","One Leg Elbow Lever",["Elbow Lever",1],"Ring Elbow Lever","OA Straddle Elbow Lever","One Arm Elbow Lever"] }
+    ]},
+    { "g": "Planche", "ladders": [
+      { "n": "Planche", "from": [["Core","Plank","Plank"]], "m": ["Planche Lean","Frog Stand / Crow Pose","Straight Arm Frog Stand / Crane Pose",["Tuck Planche",1],"Adv Tuck Planche","Straddle Planche","One Leg Planche",["Planche",1]] },
+      { "n": "Planche push up", "from": [["Planche","Planche","Tuck Planche"]], "m": ["Tuck Planche Push Up","Adv Tuck Planche Push Up","Straddle Planche Push Up","One Leg Planche Push Up",["Planche Push Up",1],"Straight Arm Planche to Handstand"] },
+      { "n": "Ring planche", "from": [["Planche","Planche","Tuck Planche"]], "m": ["Ring Frog Stand","Ring SA Frog Stand","Ring Tuck Planche","Ring Adv Tuck Planche","Ring Straddle Planche","Ring One Leg Planche",["Ring Planche",1]] },
+      { "n": "Ring planche push up", "from": [["Planche","Ring planche","Ring Tuck Planche"]], "m": ["Ring Tuck Planche PU","Ring Adv Tuck Planche PU","Ring Straddle Planche PU","Ring OL Planche PU","Ring Planche Push Up"] }
+    ]},
+    { "g": "Core", "ladders": [
+      { "n": "Plank", "m": [["Plank",1],"Straddle One Arm Plank","One Arm Plank","OA One Leg Plank"] },
+      { "n": "Extension", "m": ["Reverse Hyperextension","Hyperextension","Arch Body Hold"] },
+      { "n": "Anti-rotation", "m": ["Banded Pallof Press","Ring Pallof Press"] },
+      { "n": "Compression", "m": [["Hollow Hold",1],"Tuck Up Crunch","Seated Pike Leg Lift","Hanging Knees to Chest","Hanging Leg Raise to Bar","Ankle Weight HLR","One Arm HLR"] },
+      { "n": "Dragon flag", "from": [["Core","Compression","Hanging Leg Raise to Bar"]], "m": ["Tuck Dragon Flag Negative","Adv Tuck Dragon Flag","Straddle / One Leg Dragon Flag",["Dragon Flag",1],"Ankle Weight Dragon Flag","One Arm Dragon Flag","One Leg Dragon Press","Dragon Press","One Arm Dragon Press"] },
+      { "n": "Ab wheel", "from": [["Core","Plank","Plank"]], "m": ["Ring Ab Rollout","Knees Ab Wheel","Straight Leg Ab Wheel Ramp","Straight Leg Ab Wheel Negative",["Straight Leg Ab Wheel",1],"Weighted Ab Wheel","One Arm Ab Wheel"] }
+    ]},
+    { "g": "Legs", "ladders": [
+      { "n": "Squat", "m": ["Assisted Squat","Parallel Squat",["Full Squat",1],"Cossack Squat"] },
+      { "n": "Split squat & step up", "from": [["Legs","Squat","Full Squat"]], "m": ["Split Squat","Bulgarian Split Squat","Step Up","Deep Step Up"] },
+      { "n": "Pistol squat", "from": [["Legs","Squat","Full Squat"]], "m": ["Partial Pistol Squat","Assisted Pistol Squat",["Pistol Squat",1],"Weighted Pistol Squat","Natural One Leg Press","Elevated Friction Pistol Squat"] },
+      { "n": "Shrimp squat", "from": [["Legs","Squat","Full Squat"]], "m": ["Beginner Shrimp Squat","Intermediate Shrimp Squat",["Shrimp Squat",1],"Two Hand Shrimp Squat","Elevated 2H Shrimp Squat"] },
+      { "n": "Nordic curl", "m": ["One Leg Deadlift","90° Hip Nordic Curl","45° Hip Nordic Curl","Nordic Curl Negative",["Nordic Curl",1],"Nordic Curl Arms Overhead","Tuck One Leg Nordic Curl","One Leg Nordic Curl"] }
+    ]}
+  ]
+}
