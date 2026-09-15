@@ -18,14 +18,14 @@
   .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--paper);
     border-top:1.5px solid var(--rail);padding-bottom:env(safe-area-inset-bottom)}
   .tabbar .inner{max-width:1180px;margin:0 auto;display:flex}
-  .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  .tabbar .inner button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
     background:none;border:0;border-top:2.5px solid transparent;margin-top:-1.5px;
     padding:10px 4px 11px;color:var(--muted);cursor:pointer;font-size:13px;font-weight:500}
-  .tabbar button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;
+  .tabbar .inner button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;
     stroke-linecap:round;stroke-linejoin:round}
-  .tabbar button:hover{color:var(--ink)}
-  .tabbar button[aria-selected="true"]{color:var(--ink);font-weight:700;border-top-color:var(--ink)}
-  .tabbar button[aria-selected="true"] svg{stroke-width:2.1}
+  .tabbar .inner button:hover{color:var(--ink)}
+  .tabbar .inner button[aria-selected="true"]{color:var(--ink);font-weight:700;border-top-color:var(--ink)}
+  .tabbar .inner button[aria-selected="true"] svg{stroke-width:2.1}
 
   .meter{height:4px;background:var(--rail);margin:18px 0 4px;overflow:hidden}
   .meter i{display:block;height:100%;background:var(--ink);width:0;transition:width .35s ease}
@@ -204,6 +204,59 @@
   .entry .wn{font-weight:600;margin:0 0 3px}
   .entry .ex{color:var(--muted);font-size:13.5px;margin:1px 0}
   .entry .ex b{color:var(--ink);font-weight:500}
+
+  /* --- a session, laid out the way it is performed --------------------------
+     One column per exercise, one row per round, so reading across a row is one
+     round of a superset. Single-exercise blocks keep the inline row. */
+  .resumed{margin-left:12px;color:var(--muted)}
+  .session .scale{margin:2px 0 0}
+  .lblock{border-left:3px solid var(--rail);padding-left:14px;margin:0 0 26px}
+  .lblock.super{border-left-color:var(--ink)}
+  .lbhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-bottom:10px}
+  .lbhead h3{font-size:16px;font-weight:700;margin:0}
+  .lbhead .sub{color:var(--muted);font-size:13px}
+  .lex{margin:0 0 14px}
+  .lexhead{display:flex;align-items:baseline;gap:8px}
+  .lexhead .col{font-weight:700;width:1.1em;flex:none}
+  .lexhead .mvname{font-weight:600;flex:1}
+  .lexhead .tgt{color:var(--ink);font-size:13px;font-variant-numeric:tabular-nums;flex:none}
+  .last{margin:1px 0 5px;color:var(--muted);font-size:13px}
+  .last.none{opacity:.6}
+  .exnote{margin:0 0 6px;color:var(--ink);font-size:13px}
+  /* Label the plan's two carried-through fields so target, note and history
+     stop reading as one undifferentiated grey line. Labels recede, values do
+     not; the "Last ..." line stays wholly muted because it is history. */
+  .lb{color:var(--muted);font-weight:500}
+  .lsingle{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:9px}
+  .rpe{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+  table.rounds{border-collapse:collapse;margin-top:2px}
+  table.rounds th,table.rounds td{padding:3px 6px 3px 0;text-align:left}
+  table.rounds thead th{color:var(--muted);font-size:13px;font-weight:700;padding-bottom:3px}
+  table.rounds thead abbr{text-decoration:none;border:0}
+  table.rounds tbody th{color:var(--muted);font-size:13px;font-weight:500;width:32px;
+    font-variant-numeric:tabular-nums}
+  table.rounds .rperow th,table.rounds .rperow td{padding-top:9px}
+  .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* --- rest timer -----------------------------------------------------------
+     Sits inside the fixed tab bar so it stacks above the tabs without having to
+     guess their height, and inherits the safe-area padding already there. */
+  .restbar{display:flex;align-items:center;gap:8px;max-width:1180px;margin:0 auto;
+    padding:7px 18px;border-bottom:1.5px solid var(--rail);background:var(--panel)}
+  .restbar .lbl{color:var(--muted);font-size:13px;font-weight:600;letter-spacing:.02em}
+  .restbar .t{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;min-width:58px}
+  .restbar button{flex:0 0 auto;background:none;border:1.5px solid var(--rail);padding:4px 12px;
+    cursor:pointer;color:var(--muted);font-variant-numeric:tabular-nums}
+  .restbar button:hover,.restbar button:focus-visible{color:var(--ink);border-color:var(--ink)}
+  .restbar:not(.run):not(.up) button{flex:1}   /* idle: four big preset targets */
+  .restbar .sp{margin-left:auto}
+  /* Time is up. Inverted, not yellow — the highlighter means "your next step"
+     on the ladders and nothing else. */
+  .restbar.up{background:var(--ink)}
+  .restbar.up .lbl,.restbar.up .t{color:var(--paper)}
+  .restbar.up button{color:var(--paper);border-color:var(--paper)}
+  .restbar.up button:hover,.restbar.up button:focus-visible{color:var(--paper);border-color:var(--paper)}
+  body.hasrest .wrap{padding-bottom:168px}
 
   footer{margin-top:44px;padding-top:14px;border-top:1.5px solid var(--rail);
     display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;color:var(--muted);font-size:13.5px}

@@ -79,7 +79,7 @@ function gate(l){
 
 /* ---------- state ---------- */
 const SEED = {"v":1,"saved":"2026-09-07","level":{"Vertical pull/Pull up":3,"Horizontal pull/Rows":4,"Dips & L-sit/Dip":3,"Horizontal push/Push up":3,"Legs/Squat":3,"Legs/Pistol squat":2},"workouts":[{"id":"rr7rtqy","name":"Tensile Strength - Bodyw","blocks":[{"id":"niux0j8","name":"Main 1","items":[{"key":"Vertical pull|Pull up|Pull Up","target":"10","note":"Chin Over Bar"},{"key":"Dips & L-sit|Dip|Straight Bar Dip","target":"10","note":"Chest To Bar"}],"sets":4},{"id":"zoqvsli","name":"Main 2","items":[{"key":"Dips & L-sit|Dip|Dip","target":"10"},{"key":"Legs|Pistol squat|Assisted Pistol Squat","target":"4"}],"sets":4},{"id":"x30dzm9","name":"C","sets":3,"items":[{"key":"Horizontal pull|Rows|Wide Row","target":"10"},{"key":"Horizontal push|Push up|Pike Push Up","target":"5"}]},{"id":"xwjbo3z","name":"Core","sets":3,"items":[{"key":"Core|Compression|Hanging Leg Raise to Bar","target":"10","note":"L position for now"},{"key":"Core|Dragon flag|Tuck Dragon Flag Negative","target":"3×5 slow","note":"[1151]"}]}]}],"logbook":[],"focus":["Vertical pull|Muscle up|Muscle Up","Horizontal pull|Rows|One Arm Row","Horizontal push|One arm push up|One Arm Push Up"]};
-const K = { prog:"bwf-ladders-v3", seeded:"bwf-seeded-v1", work:"bwf-workouts-v1", log:"bwf-log-v1", focus:"bwf-focus-v1" };
+const K = { prog:"bwf-ladders-v3", seeded:"bwf-seeded-v1", work:"bwf-workouts-v1", log:"bwf-log-v1", focus:"bwf-focus-v1", sess:"bwf-session-v1" };
 let level = {}, workouts = [], logbook = [], focus = [];
 let topTab = 0, active = 0, msOnly = false, editing = null, session = null, nudges = [];
 let saveNote = "";
@@ -130,8 +130,17 @@ const saveWork = () => put(K.work, workouts);
 const saveLog  = () => put(K.log, logbook);
 const saveFocus = () => put(K.focus, focus);
 
+/* An in-progress session used to live only in the `session` variable, so
+   backgrounding the app long enough for the phone to reclaim the tab threw the
+   whole workout away. It is now written on every keystroke. */
+function drop(k){ if (store){ try{ store.removeItem(k); }catch(e){} } }
+const saveSess = () => { if (session) put(K.sess, session); else drop(K.sess); };
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden" && session) saveSess();
+});
+
 async function loadAll(){
-  const [a,b,c,d,seeded] = await Promise.all([get(K.prog), get(K.work), get(K.log), get(K.focus), get(K.seeded)]);
+  const [a,b,c,d,seeded,sv] = await Promise.all([get(K.prog), get(K.work), get(K.log), get(K.focus), get(K.seeded), get(K.sess)]);
   const nothingHere = !seeded && !(a && Object.keys(a).length) && !(b && b.length) && !(c && c.length);
   if (nothingHere){
     try{ restore(JSON.stringify(SEED)); put(K.seeded, true); }
@@ -146,7 +155,18 @@ async function loadAll(){
   if (!focus.length && !Object.keys(level).length) active = 1;
   workouts.forEach(migrate);
   if (workouts.length && !editing) editing = workouts[0].id;
+  resumeSession(sv);
   renderAll();
+}
+
+// A session left running when the app was killed comes back where it was. Open
+// on it too — if you are mid-workout, hunting for the Log tab is the friction.
+function resumeSession(sv){
+  if (!sv || !Array.isArray(sv.entries)) return;
+  session = sv;
+  session.resumed = true;
+  if (session.rest && session.rest.end <= Date.now()) delete session.rest;
+  topTab = 1;
 }
 
 /* ---------- ladders ---------- */
@@ -702,6 +722,7 @@ function startSession(wid){
     })), []) : [])
   };
   nudges = [];
+  saveSess();
   renderLog();
 }
 function finishSession(){
@@ -717,9 +738,270 @@ function finishSession(){
       if (m && (level[id(m.g,m.l)] || 0) <= m.i) nudges.push({ ...m, hard: +e.rpe >= 9 });
     }
   });
+  delete session.rest; delete session.resumed;
   logbook.unshift(session);
   session = null;
+  drop(K.sess);
   renderAll(); saveLog();
+}
+
+/* ---------- reading the last session back ----------
+   The one thing you want while standing under the bar: the reps you did last
+   time, and nothing else. Prefer the last outing of this same workout — same
+   order, same fatigue, so the numbers are comparable — and fall back to any
+   session that contains the move, which is the only case that says where the
+   numbers came from. Deload sessions are skipped (the flag comes from the cycle
+   model; nothing writes it yet). */
+function lastFor(key){
+  const wid = session ? session.wid : null;
+  const filled = sn => {
+    const e = sn.entries && sn.entries.find(x => x.key === key);
+    const vals = e && e.sets ? e.sets.filter(v => v !== "" && v != null) : [];
+    return vals.length ? { e, vals } : null;
+  };
+  const scan = sameOnly => {
+    for (const sn of logbook){                       // logbook is newest first
+      if (sn.deload) continue;
+      if (sameOnly && sn.wid !== wid) continue;
+      const h = filled(sn);
+      if (h) return { sn, ...h };
+    }
+    return null;
+  };
+  const hit = (wid && scan(true)) || scan(false);
+  if (!hit) return null;
+  return { sets:hit.vals, other: (wid && hit.sn.wid !== wid) ? hit.sn.name : null };
+}
+function lastLine(p){
+  return "Last " + p.sets.join(" · ") + (p.other ? " · in " + p.other : "");
+}
+
+/* ---------- rest timer ----------
+   Manual only — nothing auto-starts, because the app does not get opinions
+   about your training. The end time is stored as a timestamp inside the
+   session, so it survives a re-render, a tab switch and the phone sleeping;
+   setInterval only paints, it never counts. */
+let restTick = null, restAudio = null;
+const REST_PRESETS = [60, 90, 120, 180];
+const mmss = s => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+
+function restHost(){
+  let el = $("restbar");
+  if (!el){
+    el = document.createElement("div");
+    el.id = "restbar"; el.className = "restbar";
+    const bar = document.querySelector(".tabbar");
+    if (!bar) return null;
+    bar.insertBefore(el, bar.firstChild);
+  }
+  return el;
+}
+function unlockBeep(){
+  try {
+    const A = window.AudioContext || window.webkitAudioContext;
+    if (!A) return;
+    restAudio = restAudio || new A();
+    if (restAudio.state === "suspended") restAudio.resume();
+  } catch(e){ /* no audio on this device; the vibration still fires */ }
+}
+function alarm(){
+  try { if (navigator.vibrate) navigator.vibrate([180,90,180]); } catch(e){}
+  try {
+    if (!restAudio) return;
+    const t = restAudio.currentTime;
+    const o = restAudio.createOscillator(), g = restAudio.createGain();
+    o.type = "sine"; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.22, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+    o.connect(g); g.connect(restAudio.destination);
+    o.start(t); o.stop(t + 0.6);
+  } catch(e){}
+}
+function startRest(secs){
+  if (!session) return;
+  unlockBeep();
+  session.rest = { end: Date.now() + secs * 1000, len: secs, rung: false };
+  saveSess(); renderRest();
+}
+function stopRest(){
+  if (session) delete session.rest;
+  saveSess(); renderRest();
+}
+function stopTick(){ if (restTick){ clearInterval(restTick); restTick = null; } }
+function tickRest(){
+  if (!session || !session.rest || topTab !== 1){ stopTick(); return; }
+  const r = session.rest;
+  const left = Math.max(0, Math.ceil((r.end - Date.now()) / 1000));
+  const el = $("restbar"), t = el && el.querySelector(".t");
+  if (t) t.textContent = mmss(left);
+  if (!left && !r.rung){ r.rung = true; alarm(); saveSess(); renderRest(); }
+}
+function renderRest(){
+  const el = restHost();
+  if (!el) return;
+  const live = topTab === 1 && !!session;
+  document.body.classList.toggle("hasrest", live);
+  if (!live){ stopTick(); el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  el.innerHTML = "";
+  const r = session.rest;
+
+  if (!r){
+    stopTick();
+    el.className = "restbar";
+    el.insertAdjacentHTML("beforeend", '<span class="lbl">Rest</span>');
+    REST_PRESETS.forEach(secs => {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = mmss(secs);
+      b.setAttribute("aria-label", "Start a " + mmss(secs) + " rest");
+      b.onclick = () => startRest(secs);
+      el.appendChild(b);
+    });
+    return;
+  }
+
+  const left = Math.max(0, Math.ceil((r.end - Date.now()) / 1000));
+  el.className = "restbar" + (left ? " run" : " up");
+  el.insertAdjacentHTML("beforeend",
+    `<span class="lbl">${left ? "Rest" : "Go"}</span><b class="t">${mmss(left)}</b>`);
+  if (left){
+    const more = document.createElement("button");
+    more.type = "button"; more.textContent = "+30";
+    more.setAttribute("aria-label", "Add thirty seconds");
+    more.onclick = () => { r.end += 30000; r.rung = false; saveSess(); renderRest(); };
+    el.appendChild(more);
+  }
+  const x = document.createElement("button");
+  x.type = "button"; x.className = "sp"; x.textContent = left ? "Stop" : "Clear";
+  x.onclick = stopRest;
+  el.appendChild(x);
+  if (left) restTick = restTick || setInterval(tickRest, 250);
+  else stopTick();
+}
+
+/* ---------- a session, laid out the way it is performed ----------
+   Set boxes used to stack per exercise, so a four-round superset read as four
+   Pull Up boxes and then four Dip boxes — nothing like the order you train it
+   in. Blocks of two or more now render as a grid: one column per exercise, one
+   row per round, so scanning across a row is one round. A block with a single
+   exercise has no rounds worth grouping and keeps the inline row. */
+function blocksOf(sn){
+  const out = [];
+  sn.entries.forEach(e => {
+    const name = e.block || "";
+    const last = out[out.length - 1];
+    if (last && last.name === name) last.entries.push(e);
+    else out.push({ name, entries:[e] });
+  });
+  return out;
+}
+function roundsIn(bk){ return bk.entries.reduce((n,e) => Math.max(n, e.sets.length), 0) || 1; }
+
+function setInput(e, j){
+  const t = parseTarget(e.target);
+  const inp = document.createElement("input");
+  inp.type = "number"; inp.min = 0; inp.className = "num";
+  inp.inputMode = "numeric";
+  inp.value = e.sets[j];
+  inp.placeholder = t.unit === "s" ? "s" : "r";
+  inp.setAttribute("aria-label", e.name + " round " + (j + 1));
+  inp.oninput = () => { e.sets[j] = inp.value; saveSess(); };
+  return inp;
+}
+function rpeInput(e){
+  const rp = document.createElement("input");
+  rp.type = "number"; rp.min = 1; rp.max = 10; rp.step = 0.5; rp.className = "num";
+  rp.inputMode = "decimal";
+  rp.value = e.rpe || ""; rp.placeholder = "–";
+  rp.title = "Rate of perceived exertion: 10 is nothing left, 8 is about two reps in reserve";
+  rp.setAttribute("aria-label", e.name + " rate of perceived exertion");
+  rp.oninput = () => { e.rpe = rp.value; saveSess(); };
+  return rp;
+}
+
+function exHeadEl(e, i, bk){
+  const multi = bk.entries.length > 1;
+  const d = document.createElement("div");
+  d.className = "lex";
+  d.insertAdjacentHTML("beforeend",
+    `<div class="lexhead">${multi ? `<span class="col">${letter(i)}</span>` : ""}` +
+    `<span class="mvname">${esc(e.name)}</span>` +
+    `<span class="tgt"><span class="lb">Target</span> ${esc(e.target)}</span></div>`);
+
+  const prev = lastFor(e.key);
+  const p = document.createElement("p");
+  p.className = "last" + (prev ? "" : " none");
+  p.textContent = prev ? lastLine(prev) : "First time logging this";
+  d.appendChild(p);
+
+  // Carried through from the builder and read-only here: a note is part of the
+  // plan, so it is edited in Build, not mid-session.
+  if (e.note) d.insertAdjacentHTML("beforeend",
+    `<p class="exnote"><span class="lb">Note</span> ${esc(e.note)}</p>`);
+
+  if (!multi){
+    const row = document.createElement("div");
+    row.className = "lsingle";
+    const sets = document.createElement("div");
+    sets.className = "sets";
+    e.sets.forEach((v,j) => sets.appendChild(setInput(e, j)));
+    const rl = document.createElement("label");
+    rl.className = "rpe";
+    rl.append("RPE", rpeInput(e));
+    row.append(sets, rl);
+    d.appendChild(row);
+  }
+  return d;
+}
+
+function roundGridEl(bk){
+  const rounds = roundsIn(bk);
+  const box = document.createElement("div");
+  const t = document.createElement("table");
+  t.className = "rounds";
+  t.innerHTML = `<thead><tr><th><span class="vh">Round</span></th>` +
+    bk.entries.map((e,i) => `<th><abbr title="${esc(e.name)}">${letter(i)}</abbr></th>`).join("") +
+    `</tr></thead>`;
+  const body = document.createElement("tbody");
+  for (let r = 0; r < rounds; r++){
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    th.scope = "row"; th.textContent = r + 1;
+    tr.appendChild(th);
+    bk.entries.forEach(e => {
+      const td = document.createElement("td");
+      if (r < e.sets.length) td.appendChild(setInput(e, r));
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  }
+  const rr = document.createElement("tr");
+  rr.className = "rperow";
+  rr.innerHTML = '<th scope="row">RPE</th>';
+  bk.entries.forEach(e => {
+    const td = document.createElement("td");
+    td.appendChild(rpeInput(e));
+    rr.appendChild(td);
+  });
+  body.appendChild(rr);
+  t.appendChild(body);
+  box.appendChild(t);
+  return box;
+}
+
+function blockLogEl(bk){
+  const multi = bk.entries.length > 1;
+  const sec = document.createElement("section");
+  sec.className = "lblock" + (multi ? " super" : "");
+  const rounds = roundsIn(bk);
+  sec.insertAdjacentHTML("beforeend",
+    `<div class="lbhead"><h3>${esc(bk.name || "Session")}</h3>` +
+    `<span class="sub">${rounds} round${rounds === 1 ? "" : "s"}` +
+    `${multi ? " · superset" : ""}</span></div>`);
+  bk.entries.forEach((e,i) => sec.appendChild(exHeadEl(e, i, bk)));
+  if (multi) sec.appendChild(roundGridEl(bk));
+  return sec;
 }
 
 function renderLog(){
@@ -751,72 +1033,28 @@ function renderLog(){
     when.className = "when";
     const dt = document.createElement("input");
     dt.type = "date"; dt.value = session.date; dt.className = "tin"; dt.style.width = "150px";
-    dt.onchange = () => session.date = dt.value;
+    dt.onchange = () => { session.date = dt.value; saveSess(); };
     when.appendChild(dt);
+    if (session.resumed)
+      when.insertAdjacentHTML("beforeend", '<span class="resumed">Picked up where you left off</span>');
     s.appendChild(when);
 
-    const tb = document.createElement("table");
-    tb.className = "items";
-    tb.innerHTML = "<thead><tr><th>Exercise</th><th>Target</th><th>Sets</th><th>RPE</th></tr></thead>";
-    const body = document.createElement("tbody");
-    const multi = new Set(session.entries.map(e => e.block || "")).size > 1;
-    let lastBlock = null;
-    session.entries.forEach(e => {
-      const t = parseTarget(e.target);
-      if (multi && e.block !== lastBlock){
-        lastBlock = e.block;
-        const br = document.createElement("tr");
-        br.className = "blockrow";
-        br.innerHTML = `<td colspan="4">${esc(e.block || "")}</td>`;
-        body.appendChild(br);
-      }
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td><span class="mvname">${esc(e.name)}</span>${e.note ? `<br><span class="sub">${esc(e.note)}</span>` : ""}</td><td class="sub">${esc(e.target)}</td>`;
-      const td = document.createElement("td");
-      const wrap = document.createElement("div");
-      wrap.className = "sets";
-      e.sets.forEach((v,i) => {
-        const inp = document.createElement("input");
-        inp.type = "number"; inp.min = 0; inp.className = "num"; inp.value = v;
-        inp.placeholder = t.unit === "s" ? "s" : "r";
-        inp.setAttribute("aria-label", e.name + " set " + (i+1));
-        inp.oninput = () => e.sets[i] = inp.value;
-        wrap.appendChild(inp);
-      });
-      const more = document.createElement("button");
-      more.className = "btn mini"; more.textContent = "+";
-      more.setAttribute("aria-label","Add a set");
-      more.onclick = () => { e.sets.push(""); renderLog(); };
-      wrap.appendChild(more);
-      td.appendChild(wrap);
-      const tdR = document.createElement("td");
-      const rp = document.createElement("input");
-      rp.type = "number"; rp.min = 1; rp.max = 10; rp.step = 0.5; rp.className = "num";
-      rp.value = e.rpe || ""; rp.placeholder = "–";
-      rp.title = "Rate of perceived exertion: 10 is nothing left, 8 is about two reps in reserve";
-      rp.setAttribute("aria-label", e.name + " rate of perceived exertion");
-      rp.oninput = () => e.rpe = rp.value;
-      tdR.appendChild(rp);
-      tr.append(td, tdR);
-      body.appendChild(tr);
-    });
-    tb.appendChild(body);
-    s.appendChild(tb);
-    const scale = document.createElement("p");
-    scale.className = "sub";
-    scale.style.margin = "8px 0 0";
-    scale.textContent = "RPE 10 leaves nothing in the tank, 8 leaves about two reps, 6 feels easy.";
-    s.appendChild(scale);
+    blocksOf(session).forEach(bk => s.appendChild(blockLogEl(bk)));
 
-    if (!session.entries.length){
+    s.insertAdjacentHTML("beforeend",
+      '<p class="sub scale">RPE 10 leaves nothing in the tank, 8 leaves about two reps, 6 feels easy.</p>');
+
+    // A free session has no plan to work through, so the picker stays open.
+    if (!session.wid){
       const sel = moveSelect();
       sel.style.marginTop = "14px";
       sel.onchange = () => {
         const m = byKey[sel.value];
         if (!m) return;
         const t = target(m.n);
-        session.entries.push({ key:m.key, name:m.n, block:"", target:t, sets:Array(parseTarget(t).sets).fill(""), rpe:"" });
-        renderLog();
+        session.entries.push({ key:m.key, name:m.n, block:"", target:t,
+                               sets:Array(parseTarget(t).sets || 3).fill(""), rpe:"", note:"" });
+        saveSess(); renderLog();
       };
       s.appendChild(sel);
     }
@@ -824,7 +1062,7 @@ function renderLog(){
     const nt = document.createElement("textarea");
     nt.className = "note"; nt.placeholder = "How did it feel?"; nt.style.marginTop = "14px";
     nt.value = session.note || "";
-    nt.oninput = () => session.note = nt.value;
+    nt.oninput = () => { session.note = nt.value; saveSess(); };
     s.appendChild(nt);
 
     const acts = document.createElement("div");
@@ -832,10 +1070,13 @@ function renderLog(){
     const done_ = document.createElement("button");
     done_.className = "btn solid"; done_.textContent = "Save session";
     done_.onclick = finishSession;
-    const drop = document.createElement("button");
-    drop.className = "btn"; drop.textContent = "Discard";
-    drop.onclick = () => { session = null; renderLog(); };
-    acts.append(done_, drop);
+    const ditch = document.createElement("button");
+    ditch.className = "btn"; ditch.textContent = "Discard";
+    ditch.onclick = () => {
+      if (!confirm("Throw this session away?")) return;
+      session = null; drop(K.sess); renderLog();
+    };
+    acts.append(done_, ditch);
     s.appendChild(acts);
     top.appendChild(s);
   }
@@ -857,6 +1098,8 @@ function renderLog(){
     });
     nb.appendChild(d);
   }
+
+  renderRest();
 
   const h = $("hist");
   h.innerHTML = "";
@@ -981,6 +1224,7 @@ function renderAllInner(){
   if (topTab === 0) renderLadders();
   if (topTab === 1) renderLog();
   if (topTab === 2) renderBuild();
+  renderRest();
   const d = done();
   if ($("count")) $("count").innerHTML = `${d} <span>of ${total} rungs</span>`;
   if ($("save")) $("save").textContent = saveNote;
@@ -994,6 +1238,7 @@ if ($("newW")) $("newW").onclick = () => {
 if ($("reset")) $("reset").onclick = () => {
   if (!confirm("Clear every ladder, workout and logged session?")) return;
   level = {}; workouts = []; logbook = []; editing = null; session = null; nudges = [];
+  drop(K.sess);
   renderAll(); saveProg(); saveWork(); saveLog();
 };
 
