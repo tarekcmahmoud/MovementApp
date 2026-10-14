@@ -746,6 +746,44 @@ var Data = (function () {
   }
   function indexed(list) { return list.map(function (s, i) { return { s: s, i: i }; }); }
 
+  // A day-less slot exists only because the migration synthesized one for a
+  // workout v1 never planned. Once the user gives that workout real days, the
+  // day-less slot would show on Week as an extra session. Move its sessions,
+  // week by week, onto the workout's day slots (earliest day first, only into
+  // a week that slot has nothing logged for), then drop the day-less slot -
+  // but only if every one of its sessions found a home. Nothing is deleted.
+  // Mutates the cycle and Data.state.sessions; returns true if anything moved.
+  var WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+  Data.absorbDaylessSlots = function (cycle) {
+    if (!cycle || !Array.isArray(cycle.slots)) return false;
+    var changed = false, sessions = Data.state.sessions;
+    var strays = cycle.slots.filter(function (s) { return WEEKDAYS.indexOf(s.day) < 0; });
+    strays.forEach(function (stray) {
+      var dayed = cycle.slots.filter(function (s) { return s.workoutId === stray.workoutId && WEEKDAYS.indexOf(s.day) >= 0; })
+        .sort(function (a, b) { return WEEKDAYS.indexOf(a.day) - WEEKDAYS.indexOf(b.day); });
+      if (!dayed.length || !stray.workoutId) return;
+      var mine = sessions.filter(function (s) { return s.cycleId === cycle.id && s.slotId === stray.id; });
+      var weeks = [];
+      mine.forEach(function (s) { if (weeks.indexOf(s.week) < 0) weeks.push(s.week); });
+      var stuck = false;
+      weeks.forEach(function (wk) {
+        var target = dayed.filter(function (d) {
+          return !sessions.some(function (s) { return s.cycleId === cycle.id && s.week === wk && s.slotId === d.id; });
+        })[0];
+        if (!target) { stuck = true; return; }
+        mine.forEach(function (s) {
+          if (s.week !== wk) return;
+          s.v1 = isObj(s.v1) ? s.v1 : {};
+          if (s.v1.movedFromSlot == null) s.v1.movedFromSlot = stray.id;
+          s.slotId = target.id;
+          changed = true;
+        });
+      });
+      if (!stuck) { cycle.slots.splice(cycle.slots.indexOf(stray), 1); changed = true; }
+    });
+    return changed;
+  };
+
   Data.sessionFor = function (cycleId, week, slotId) {
     var hits = indexed(Data.state.sessions).filter(function (c) {
       return c.s.cycleId === cycleId && c.s.week === week && c.s.slotId === slotId;

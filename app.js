@@ -1246,7 +1246,8 @@
     var stray = route.isNew ? 0 : cycle.slots.filter(function (s) {
       return s.workoutId === route.draft.id && DAYS.indexOf(s.day) < 0;
     }).length;
-    if (stray) body.push(h('p', { class: 'note-text' }, plural(stray, 'session', 'sessions') + ' a week on no particular day. Those are left as they are.'));
+    if (stray) body.push(h('p', { class: 'note-text' }, plural(stray, 'session', 'sessions') +
+      ' a week on no particular day. Pick days and its logged sessions move onto them.'));
     return UI.card({
       title: 'Days', sub: 'Each day is one session a week. Applied when you save.', body: body
     });
@@ -1272,6 +1273,7 @@
       current.forEach(function (s) {
         if (route.days.indexOf(s.day) < 0) cycle.slots.splice(cycle.slots.indexOf(s), 1);
       });
+      Data.absorbDaylessSlots(cycle);
     });
     if (!ok) { render(); return; }
     route.force = true;
@@ -1726,6 +1728,10 @@
       .then(function (c) {
         chart = c;
         Data.load(storage, chart);
+        // Repairs a cycle saved before day-less slots were absorbed on Save.
+        var repaired = false;
+        Data.state.cycles.forEach(function (c) { if (Data.absorbDaylessSlots(c)) repaired = true; });
+        if (repaired) Data.save();
         checkDrift();
         if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         history.replaceState({ depth: 0 }, '');

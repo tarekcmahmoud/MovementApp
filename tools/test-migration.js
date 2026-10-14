@@ -645,6 +645,18 @@ function runUnitTests(st, v1) {
   T("empty plan: a pre-cycle session stays outside the cycle", es("e0").cycleId === null && es("e0").slotId === null);
   T("empty plan: the loss check does not count synthesized slots",
     Data.conservationProblems({ cycle: { id: "c-e", plan: [] }, logbook: [] }, { cycles: [ce], sessions: [] }).every(p => !/slots/.test(p)));
+  // --- absorbing the day-less slot once the user picks days
+  Data.state = emptyPlan;
+  T("absorb: nothing happens while the workout has no days", !Data.absorbDaylessSlots(ce) && ce.slots.length === 1);
+  ce.slots.push({ id: "d-mon", day: "mon", workoutId: "wp-a" }, { id: "d-thu", day: "thu", workoutId: "wp-a" });
+  emptyPlan.sessions.unshift({ id: "clash", cycleId: ce.id, week: 2, slotId: "d-mon", workoutId: "wp-a", completedAt: "x", entries: [], milestones: [] });
+  const nSess = emptyPlan.sessions.length;
+  T("absorb: day-less slot removed once days exist", Data.absorbDaylessSlots(ce) && ce.slots.map(s => s.id).join() === "d-mon,d-thu");
+  T("absorb: sessions move to the earliest free day slot per week",
+    es("e1").slotId === "d-mon" && es("e2").slotId === "d-thu" && es("clash").slotId === "d-mon");
+  T("absorb: no session lost, original slot recorded, idempotent",
+    emptyPlan.sessions.length === nSess && !!es("e1").v1.movedFromSlot && !Data.absorbDaylessSlots(ce));
+
 }
 
 /* ---------- a real export ---------- */
