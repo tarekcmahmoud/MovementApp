@@ -590,8 +590,11 @@
           h('div', { class: 'between' },
             h('span', { class: 'card-title', style: { padding: 0 } }, b.name || 'Block ' + blockLetter(bi)),
             UI.pill(multi ? 'Superset · ' + plural(b.sets, 'round', 'rounds') : plural(b.sets, 'set', 'sets'))),
-          h('div', { class: 'ex-cols' }, h('div', { class: 'ex-gutter' }), heads),
-          setRows
+          // 3+ exercises side by side would squeeze each column too narrow to
+          // read or tap, so those blocks scroll sideways with fixed-width columns.
+          h('div', { class: 'ex-scroll' + (b.exercises.length > 2 ? ' is-wide' : '') },
+            h('div', { class: 'ex-cols' }, h('div', { class: 'ex-gutter' }), heads),
+            setRows)
         ]
       }));
     });

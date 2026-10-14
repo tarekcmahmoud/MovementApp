@@ -777,6 +777,37 @@ button.row { cursor: pointer; }
 .set-cell { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .set-last { padding-left: 6px; font-size: 12px; line-height: 1.3; color: var(--muted); }
 
+/* A block's exercise columns and set rows scroll together. With 3+ exercises
+   the columns keep a fixed width and the block scrolls sideways instead of
+   compressing; it bleeds to the card's edges so the next column peeks in as a
+   hint, and the R1/R2 labels stay pinned on the left. */
+.ex-scroll { display: flex; flex-direction: column; }
+.ex-scroll > * + * { margin-top: 12px; }
+.ex-scroll.is-wide {
+  margin-left: -18px;
+  margin-right: -18px;
+  padding: 0 18px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-left: 54px;
+  scrollbar-width: none;
+}
+.ex-scroll.is-wide::-webkit-scrollbar { display: none; }
+.ex-scroll.is-wide > * { width: max-content; min-width: 100%; }
+.ex-scroll.is-wide .ex-col,
+.ex-scroll.is-wide .set-cell { flex: 0 0 128px; }
+.ex-scroll.is-wide .ex-gutter,
+.ex-scroll.is-wide .set-label {
+  position: sticky;
+  left: -18px;
+  z-index: 1;
+  width: 46px;
+  margin-left: -18px;
+  padding-left: 18px;
+  background: var(--card);
+  box-shadow: 8px 0 0 var(--card);   /* covers the column gap as content slides under */
+}
+
 /* Rung picker (Workout editor, "Rung - optional") */
 .picker-btn {
   display: flex;
