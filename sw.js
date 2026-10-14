@@ -2,22 +2,28 @@
    All paths are relative so this works unchanged whether the app is served from
    a domain root or from a GitHub Pages subdirectory. Bump CACHE on every deploy
    or returning phones will keep serving the old shell. */
-const CACHE = "bwf-ladders-v9";
+const CACHE = "bwl-v2-3";
+// index.html loads its scripts and stylesheet with ?v=<this>. A phone still
+// running an OLDER worker serves our own assets cache-first, so on the first
+// launch after a deploy it would pair the new index.html with the old cached
+// app.js. A new query string can never hit an old cache entry. Bump it in
+// index.html together with CACHE.
+const V = "?v=2.3";
 
 const SHELL = [
   "./",
   "index.html",
-  "styles.css",
-  "app.js",
+  "styles.css" + V,
+  "data.js" + V,
+  "ui.js" + V,
+  "app.js" + V,
   "chart.json",
+  "fonts/oxanium-latin.woff2",
   "manifest.webmanifest",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/maskable-512.png"
 ];
-
-const isFont = url =>
-  url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
 
 self.addEventListener("install", event => {
   event.waitUntil(
@@ -53,19 +59,6 @@ self.addEventListener("fetch", event => {
           return res;
         })
         .catch(() => caches.match("index.html").then(r => r || caches.match("./")))
-    );
-    return;
-  }
-
-  // Fonts are third-party and immutable: cache-first, and cache on first sight
-  // so Barlow survives going offline.
-  if (isFont(url)) {
-    event.respondWith(
-      caches.match(req).then(hit => hit || fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy));
-        return res;
-      }).catch(() => hit))
     );
     return;
   }

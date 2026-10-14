@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bodyweight Ladders v2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#09090b}a:hover{color:#3f3f46}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:default}
+input,select,textarea{font-family:inherit}
+input::placeholder,textarea::placeholder{color:#a1a1aa;opacity:1}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid #18181b;outline-offset:2px}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.scroll>*{flex-shrink:0}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #f4f4f4; color: #09090b; font-family: 'Oxanium', system-ui, sans-serif; font-variant-numeric: tabular-nums; overflow: hidden;">
+
+<sc-if value="{{showWeekBody}}" hint-placeholder-val="{{true}}">
+<sc-if value="{{isArch}}" hint-placeholder-val="{{false}}">
+<div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e4e4e7;">
+  <button onClick="{{goPlan}}" aria-label="Back to plan" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18"></path></svg>
+  </button>
+  <div style="flex: 1; display: flex; flex-direction: column;">
+    <span style="font-size: 13px; color: #71717a;">Past cycle</span>
+    <span style="font-size: 17px; font-weight: 600;">{{archTitle}}</span>
+  </div>
+  <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #09090b; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; padding: 4px 12px 4px 10px;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #a1a1aa;"></span>Read only</span>
+</div>
+</sc-if>
+<div class="scroll" onPointerDown="{{swipeDown}}" onPointerUp="{{swipeUp}}" style="{{weekScrollStyle}}">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 8px;">
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <div style="font-size: 13px; color: #71717a;">{{wk.range}}</div>
+      <h1 style="margin: 0; font-size: 32px; line-height: 1.15; font-weight: 700; letter-spacing: -0.01em;">Week {{wk.n}} <span style="color: #71717a; font-weight: 500;">of {{wk.total}}</span></h1>
+    </div>
+    <div style="display: flex; gap: 6px; padding-bottom: 6px;">
+      <button onClick="{{wk.prev}}" disabled="{{wk.prevDisabled}}" aria-label="Previous week" style="{{wk.prevStyle}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18"></path></svg>
+      </button>
+      <button onClick="{{wk.next}}" disabled="{{wk.nextDisabled}}" aria-label="Next week" style="{{wk.nextStyle}}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6C9 6 15 10.4189 15 12C15 13.5812 9 18 9 18"></path></svg>
+      </button>
+    </div>
+  </div>
+  <div style="display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; height: 30px; overflow: hidden; margin-top: -6px; white-space: nowrap;">
+    <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: #09090b; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; padding: 4px 12px 4px 10px;"><span style="{{wk.dotStyle}}"></span>{{wk.status}}</span>
+    <sc-if value="{{wk.isDeload}}" hint-placeholder-val="{{false}}">
+      <span style="font-size: 13px; font-weight: 500; color: #3f3f46; border: 1px dashed #a1a1aa; border-radius: 999px; padding: 4px 12px;">Deload week</span>
+    </sc-if>
+    <sc-if value="{{wk.canJump}}" hint-placeholder-val="{{false}}">
+      <button onClick="{{wk.jump}}" style="border: none; background: transparent; padding: 4px 4px; font-size: 13px; font-weight: 500; color: #09090b; text-decoration: underline; text-underline-offset: 3px;">Back to this week</button>
+    </sc-if>
+  </div>
+
+  <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+    <div style="padding: 18px 18px 14px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; font-size: 14px;">
+        <span style="color: #71717a;">Cycle</span>
+        <span style="color: #71717a;">{{wk.started}}</span>
+      </div>
+      <div style="display: flex; gap: 6px; justify-content: space-between;">
+        <sc-for list="{{wk.strip}}" as="w" hint-placeholder-count="6">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+            <button onClick="{{w.pick}}" aria-label="{{w.aria}}" aria-current="{{w.selected}}" style="{{w.cellStyle}}">{{w.n}}</button>
+            <div style="font-size: 10px; color: #71717a; height: 12px;">{{w.tag}}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="padding: 12px 18px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px; font-size: 13px; color: #71717a;">Swipe left or right to change week.</div>
+  </div>
+
+  <sc-if value="{{wk.hasSummary}}" hint-placeholder-val="{{false}}">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+      <div style="padding: 16px;">
+        <div style="background: #f4f4f5; border-radius: 20px; padding: 14px 16px; display: flex; justify-content: space-between; font-size: 14px;">
+          <span style="color: #71717a;">Sessions done</span>
+          <span style="font-weight: 600;">{{wk.summary}}</span>
+        </div>
+      </div>
+      <sc-if value="{{wk.hasAchievements}}" hint-placeholder-val="{{true}}">
+        <div style="padding: 14px 18px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 13px; color: #71717a;">Key achievements</span>
+          <p style="margin: 0; font-size: 15px; color: #09090b; line-height: 1.45;">{{wk.achievements}}</p>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <h2 style="margin: 4px 4px 0; font-size: 14px; font-weight: 500; color: #71717a;">Sessions</h2>
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <sc-for list="{{wk.slots}}" as="s" hint-placeholder-count="3">
+      <button onClick="{{s.open}}" disabled="{{s.readOnly}}" style="display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; text-align: left; color: #09090b;">
+        <div style="width: 48px; height: 48px; flex: none; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 500;">{{s.day}}</div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 15px; font-weight: 600;">{{s.name}}</span>
+          <span style="font-size: 13px; color: #71717a;">{{s.sub}}</span>
+        </div>
+        <sc-if value="{{s.done}}" hint-placeholder-val="{{false}}">
+          <span style="display: flex; align-items: center; gap: 4px; padding: 4px 12px; border-radius: 999px; background: #18181b; color: #fafafa; font-size: 13px; font-weight: 500;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 14L8.5 17.5L19 6.5"></path></svg>
+            Done
+          </span>
+        </sc-if>
+        <sc-if value="{{s.missed}}" hint-placeholder-val="{{false}}">
+          <span style="font-size: 13px; color: #71717a;">Not done</span>
+        </sc-if>
+        <sc-if value="{{s.showChevron}}" hint-placeholder-val="{{true}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6C9 6 15 10.4189 15 12C15 13.5812 9 18 9 18"></path></svg>
+        </sc-if>
+      </button>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{isWeekEmpty}}" hint-placeholder-val="{{false}}">
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 24px 16px 112px; display: flex; flex-direction: column; justify-content: center;">
+  <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; padding: 32px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;">
+    <span style="width: 48px; height: 48px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4V20M20 12H4"></path></svg>
+    </span>
+    <h1 style="margin: 4px 0 0; font-size: 17px; font-weight: 600;">No cycle running</h1>
+    <p style="margin: 0; font-size: 15px; color: #71717a; line-height: 1.5;">Start a new cycle from Plan. Your last cycle is in Past cycles.</p>
+    <button onClick="{{goPlan}}" style="margin-top: 6px; height: 44px; padding: 0 22px; border: none; border-radius: 999px; background: #18181b; color: #fafafa; font-size: 14px; font-weight: 500;">Go to Plan</button>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{isLog}}" hint-placeholder-val="{{false}}">
+<div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e4e4e7;">
+  <button onClick="{{goWeek}}" aria-label="Back to week" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18"></path></svg>
+  </button>
+  <div style="display: flex; flex-direction: column;">
+    <span style="font-size: 13px; color: #71717a;">{{logDay}} · Week {{logWeek}}</span>
+    <span style="font-size: 17px; font-weight: 600;">{{logName}}</span>
+  </div>
+</div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+  <sc-for list="{{blocks}}" as="b" hint-placeholder-count="2">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <span style="font-size: 14px; font-weight: 600;">{{b.name}}</span>
+        <span style="font-size: 12px; font-weight: 500; color: #3f3f46; border: 1px solid #e4e4e7; border-radius: 999px; padding: 3px 10px;">{{b.title}}</span>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <div style="width: 28px; flex: none;"></div>
+        <sc-for list="{{b.heads}}" as="h" hint-placeholder-count="2">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+            <span style="font-size: 14px; font-weight: 500; line-height: 1.25;">{{h.name}}</span>
+            <span style="font-size: 13px; color: #71717a;">Target {{h.target}}</span>
+            <sc-if value="{{h.hasNote}}" hint-placeholder-val="{{false}}">
+              <span style="font-size: 12px; color: #3f3f46; background: #f4f4f5; border-radius: 999px; padding: 1px 8px;">{{h.note}}</span>
+            </sc-if>
+            <sc-if value="{{h.showLink}}" hint-placeholder-val="{{true}}">
+              <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: #3f3f46; border: 1px solid #e4e4e7; border-radius: 999px; padding: 1px 8px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3V21M17 3V21M7 8H17M7 13H17M7 18H17"></path></svg>
+                {{h.linkShort}}
+              </span>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <sc-for list="{{b.rows}}" as="r" hint-placeholder-count="3">
+        <div style="display: flex; gap: 8px; align-items: flex-start;">
+          <div style="width: 28px; height: 44px; flex: none; display: flex; align-items: center; font-size: 12px; font-weight: 500; color: #71717a;">{{r.label}}</div>
+          <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="2">
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+              <input type="number" inputmode="numeric" aria-label="{{c.aria}}" value="{{c.value}}" onChange="{{c.set}}" style="width: 100%; height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; background: #ffffff; padding: 0 12px; font-size: 17px; font-weight: 600; color: #09090b;">
+              <span style="padding-left: 6px; font-size: 12px; color: #71717a;">{{c.last}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </sc-for>
+</div>
+<div style="flex: none; padding: 12px 16px 24px; background: #fafafa; border-top: 1px solid #e4e4e7;">
+  <button onClick="{{complete}}" style="width: 100%; height: 48px; border: none; border-radius: 999px; background: #18181b; color: #fafafa; font-size: 15px; font-weight: 600;">{{completeLabel}}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isPlan}}" hint-placeholder-val="{{false}}">
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 24px 16px 112px; display: flex; flex-direction: column; gap: 12px;">
+  <sc-if value="{{hasCycle}}" hint-placeholder-val="{{true}}">
+    <button onClick="{{goCycle}}" style="display: flex; flex-direction: column; width: 100%; padding: 0; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; text-align: left; color: #09090b;">
+      <div style="width: 100%; box-sizing: border-box; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+            <span style="font-size: 13px; color: #71717a;">Current cycle</span>
+            <span style="font-size: 22px; line-height: 1.2; font-weight: 700; letter-spacing: -0.01em;">{{cy.name}}</span>
+          </div>
+          <span style="width: 40px; height: 40px; flex: none; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6C9 6 15 10.4189 15 12C15 13.5812 9 18 9 18"></path></svg>
+          </span>
+        </div>
+        <span style="align-self: flex-start; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; border: 1px solid #e4e4e7; border-radius: 999px; padding: 4px 12px 4px 10px;"><span style="width: 8px; height: 8px; border-radius: 999px; background: #eab308;"></span>{{cy.nowLabel}}</span>
+        <div style="background: #f4f4f5; border-radius: 20px; padding: 6px 16px; display: flex; flex-direction: column;">
+          <div style="display: flex; justify-content: space-between; padding: 9px 0; font-size: 14px;"><span style="color: #71717a;">Workouts</span><span style="font-weight: 500;">{{cy.workoutsLabel}}</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 9px 0; font-size: 14px;"><span style="color: #71717a;">Weeks</span><span style="font-weight: 500;">{{cy.weeks}}</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 9px 0; font-size: 14px;"><span style="color: #71717a;">Start</span><span style="font-weight: 500;">{{cy.startLabel}}</span></div>
+          <div style="display: flex; justify-content: space-between; padding: 11px 0 9px; font-size: 14px; border-top: 1px solid #e4e4e7;"><span style="color: #71717a;">Deload</span><span style="font-weight: 600;">{{cy.deloadLabel}}</span></div>
+        </div>
+      </div>
+      <div style="width: 100%; box-sizing: border-box; padding: 14px 18px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px; display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 13px; color: #71717a;">Key objective</span>
+        <span style="font-size: 14px; line-height: 1.45; color: #09090b;">{{cy.objective}}</span>
+      </div>
+    </button>
+  </sc-if>
+  <sc-if value="{{noCycle}}" hint-placeholder-val="{{false}}">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+      <span style="width: 48px; height: 48px; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4V20M20 12H4"></path></svg>
+      </span>
+      <span style="font-size: 17px; font-weight: 600;">No cycle running</span>
+      <span style="font-size: 15px; color: #71717a; line-height: 1.5;">A new cycle imports the workouts from your last one.</span>
+    </div>
+  </sc-if>
+
+  <button onClick="{{newCycle}}" style="align-self: center; display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 24px; border: none; background: #18181b; border-radius: 999px; font-size: 14px; font-weight: 500; color: #fafafa;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4V20M20 12H4"></path></svg>
+    New cycle
+  </button>
+  <sc-if value="{{newCycleHint}}" hint-placeholder-val="{{false}}">
+    <p style="margin: 0 8px; font-size: 14px; color: #3f3f46; text-align: center; line-height: 1.45;">End the current cycle before starting a new one. Open it and use End cycle.</p>
+  </sc-if>
+
+  <div style="margin-top: 8px; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+    <div style="padding: 18px 18px 6px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 14px; font-weight: 600;">Past cycles</span>
+      <span style="font-size: 13px; color: #71717a;">When they ran and what they got you.</span>
+    </div>
+    <sc-for list="{{pastList}}" as="p" hint-placeholder-count="1">
+      <button onClick="{{p.open}}" style="display: flex; align-items: center; gap: 12px; margin: 0 18px; padding: 14px 0; border: none; border-top: 1px solid #e4e4e7; background: transparent; text-align: left; color: #09090b; min-height: 56px;">
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 15px; font-weight: 600;">{{p.period}}</span>
+          <span style="{{p.achStyle}}">{{p.achievements}}</span>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6C9 6 15 10.4189 15 12C15 13.5812 9 18 9 18"></path></svg>
+      </button>
+    </sc-for>
+    <sc-if value="{{noPast}}" hint-placeholder-val="{{false}}">
+      <div style="padding: 8px 18px 16px; font-size: 13px; color: #71717a;">None yet</div>
+    </sc-if>
+    <div style="height: 6px;"></div>
+  </div>
+
+  <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+    <div style="padding: 18px 18px 6px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 14px; font-weight: 600;">Ladders</span>
+      <span style="font-size: 13px; color: #71717a; line-height: 1.45;">Collections you can link exercises to. Nothing moves automatically.</span>
+    </div>
+    <sc-for list="{{colRows}}" as="c" hint-placeholder-count="2">
+      <div style="display: flex; align-items: flex-start; gap: 12px; margin: 0 18px; padding: 16px 0; border-top: 1px solid #e4e4e7;">
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 15px; font-weight: 600;">{{c.name}}</span>
+          <span style="font-size: 13px; color: #71717a; line-height: 1.4;">{{c.sub}}</span>
+        </div>
+        <button role="switch" aria-checked="{{c.on}}" aria-label="{{c.aria}}" onClick="{{c.toggle}}" style="{{c.track}}">
+          <span style="width: 24px; height: 24px; border-radius: 999px; background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.25); display: block;"></span>
+        </button>
+      </div>
+    </sc-for>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 18px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px;">
+      <button onClick="{{addCollection}}" style="height: 44px; padding: 0 18px; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">Add collection</button>
+      <sc-if value="{{anyOn}}" hint-placeholder-val="{{true}}">
+        <button onClick="{{openLadders}}" style="height: 44px; padding: 0 20px; border: none; background: #18181b; border-radius: 999px; font-size: 14px; font-weight: 500; color: #fafafa;">Open ladders</button>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+    <div style="padding: 18px; display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 14px; font-weight: 600;">Backup</span>
+      <span style="font-size: 13px; color: #71717a;">Data lives on this phone only.</span>
+    </div>
+    <div style="padding: 14px 18px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px;">
+      <button style="width: 100%; height: 44px; border: none; background: #f0f0f0; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">Export data</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{isCycle}}" hint-placeholder-val="{{false}}">
+<div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e4e4e7;">
+  <button onClick="{{goPlan}}" aria-label="Back to plan" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18"></path></svg>
+  </button>
+  <div style="display: flex; flex-direction: column;">
+    <span style="font-size: 13px; color: #71717a;">Current cycle</span>
+    <span style="font-size: 17px; font-weight: 600;">{{cy.name}}</span>
+  </div>
+</div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 32px; display: flex; flex-direction: column; gap: 12px;">
+  <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; padding: 18px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <span style="font-size: 14px; font-weight: 600;">Details</span>
+      <span style="font-size: 13px; color: #71717a;">Name, objective and schedule for this cycle.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="cy-name" style="font-size: 13px; font-weight: 500;">Name</label>
+      <input id="cy-name" type="text" value="{{cy.name}}" onChange="{{cy.setName}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="cy-obj" style="font-size: 13px; font-weight: 500;">Key objective</label>
+      <input id="cy-obj" type="text" value="{{cy.objectiveRaw}}" placeholder="What this cycle is for" onChange="{{cy.setObjective}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+        <label for="cy-weeks" style="font-size: 13px; font-weight: 500;">Weeks</label>
+        <input id="cy-weeks" type="number" inputmode="numeric" min="1" value="{{cy.weeks}}" onChange="{{cy.setWeeks}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+        <label for="cy-deload" style="font-size: 13px; font-weight: 500;">Deload week</label>
+        <input id="cy-deload" type="number" inputmode="numeric" min="0" value="{{cy.deload}}" placeholder="None" onChange="{{cy.setDeload}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="cy-start" style="font-size: 13px; font-weight: 500;">Start</label>
+      <input id="cy-start" type="date" value="{{cy.start}}" onChange="{{cy.setStart}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+    </div>
+  </div>
+
+  <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+    <div style="padding: 18px 18px 6px; font-size: 14px; font-weight: 600;">Workouts</div>
+    <sc-for list="{{workoutsList}}" as="w" hint-placeholder-count="2">
+      <button onClick="{{w.edit}}" style="display: flex; align-items: center; gap: 12px; margin: 0 18px; padding: 14px 0; border: none; border-top: 1px solid #e4e4e7; background: transparent; text-align: left; color: #09090b; min-height: 56px;">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 15px; font-weight: 600;">{{w.name}}</span>
+          <span style="font-size: 13px; color: #71717a;">{{w.sub}}</span>
+        </div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6C9 6 15 10.4189 15 12C15 13.5812 9 18 9 18"></path></svg>
+      </button>
+    </sc-for>
+    <div style="padding: 14px 18px; margin-top: 4px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px;">
+      <button onClick="{{newWorkout}}" style="width: 100%; height: 44px; border: none; background: #f0f0f0; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">New workout</button>
+    </div>
+  </div>
+
+  <sc-if value="{{notEnding}}" hint-placeholder-val="{{true}}">
+    <button onClick="{{startEnding}}" style="align-self: center; height: 44px; padding: 0 22px; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">End cycle</button>
+  </sc-if>
+  <sc-if value="{{ending}}" hint-placeholder-val="{{false}}">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 14px; font-weight: 600;">End {{cy.name}}</span>
+            <span style="font-size: 13px; color: #71717a; line-height: 1.45;">Write what this cycle got you. It moves to Past cycles and its log becomes read only.</span>
+          </div>
+          <button onClick="{{cancelEnding}}" aria-label="Close" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6L18 18"></path></svg>
+          </button>
+        </div>
+        <label for="cy-ach" style="font-size: 13px; font-weight: 500;">Key achievements</label>
+        <textarea id="cy-ach" rows="4" value="{{achDraft}}" placeholder="e.g. First strict pull up" onChange="{{setAch}}" style="box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 20px; padding: 12px 14px; font-size: 15px; line-height: 1.45; color: #09090b; background: #ffffff; resize: vertical;"></textarea>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 18px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px;">
+        <button onClick="{{cancelEnding}}" style="height: 44px; padding: 0 18px; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">Cancel</button>
+        <button onClick="{{endCycle}}" disabled="{{endDisabled}}" style="{{endBtnStyle}}">End cycle</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isEdit}}" hint-placeholder-val="{{false}}">
+<div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e4e4e7;">
+  <button onClick="{{goCycle}}" aria-label="Back to cycle" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18"></path></svg>
+  </button>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+    <span style="font-size: 13px; color: #71717a;">Edit workout</span>
+    <span style="font-size: 17px; font-weight: 600;">{{editName}}</span>
+  </div>
+  <button onClick="{{goCycle}}" style="height: 40px; padding: 0 20px; border: none; border-radius: 999px; background: #18181b; color: #fafafa; font-size: 14px; font-weight: 500;">Save</button>
+</div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 32px; display: flex; flex-direction: column; gap: 12px;">
+  <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 4px;">
+    <label for="wk-name" style="font-size: 13px; font-weight: 500;">Workout name</label>
+    <input id="wk-name" type="text" value="{{editName}}" onChange="{{setWorkoutName}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+  </div>
+  <sc-for list="{{editBlocks}}" as="b" hint-placeholder-count="2">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 18px 18px 6px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label for="{{b.nameId}}" style="font-size: 13px; color: #71717a;">Block {{b.letter}}</label>
+          <sc-if value="{{b.multi}}" hint-placeholder-val="{{false}}">
+            <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #09090b; border: 1px solid #e4e4e7; border-radius: 999px; padding: 2px 10px 2px 8px;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #18181b;"></span>Superset</span>
+          </sc-if>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input id="{{b.nameId}}" type="text" value="{{b.name}}" placeholder="Block name" onChange="{{b.setName}}" style="flex: 1; min-width: 0; height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; font-weight: 600; color: #09090b; background: #ffffff;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+            <input id="{{b.setsId}}" type="number" inputmode="numeric" min="1" aria-label="{{b.setsLabel}}" value="{{b.sets}}" onChange="{{b.setSets}}" style="width: 52px; height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; background: #f4f4f5; padding: 0 8px; font-size: 15px; font-weight: 600; text-align: center; color: #09090b;">
+          </div>
+        </div>
+        <span style="font-size: 12px; color: #71717a; text-align: right; margin-top: -6px;">{{b.setsLabel}}</span>
+      </div>
+      <sc-for list="{{b.exs}}" as="e" hint-placeholder-count="2">
+        <div style="{{e.rowStyle}}">
+          <span style="align-self: flex-start; font-size: 12px; font-weight: 500; color: #3f3f46; background: #f4f4f5; border-radius: 999px; padding: 2px 10px;">{{e.tag}}</span>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="{{e.nid}}" style="font-size: 13px; font-weight: 500;">Exercise</label>
+            <input id="{{e.nid}}" type="text" value="{{e.name}}" placeholder="e.g. Archer Pull Up" onChange="{{e.setName}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+              <label for="{{e.tid}}" style="font-size: 13px; font-weight: 500;">Target</label>
+              <input id="{{e.tid}}" type="text" value="{{e.target}}" placeholder="3×8" onChange="{{e.setTarget}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+            </div>
+            <div style="flex: 1.4; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+              <label for="{{e.oid}}" style="font-size: 13px; font-weight: 500;">Default note</label>
+              <input id="{{e.oid}}" type="text" value="{{e.note}}" placeholder="Optional" onChange="{{e.setNote}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+            </div>
+          </div>
+          <sc-if value="{{e.chartOn}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <span style="font-size: 13px; font-weight: 500;">Rung <span style="color: #71717a; font-weight: 400;">· optional</span></span>
+              <button onClick="{{e.togglePick}}" aria-expanded="{{e.open}}" aria-label="{{e.pickAria}}" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 8px 14px; font-size: 14px; color: #09090b; background: #ffffff; text-align: left;">
+                <span style="{{e.linkLabelStyle}}">{{e.linkLabel}}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 9.5L12 4.5L17 9.5M7 14.5L12 19.5L17 14.5"></path></svg>
+              </button>
+              <sc-if value="{{e.open}}" hint-placeholder-val="{{false}}">
+                <div style="border: 1px solid #e4e4e7; border-radius: 20px; max-height: 280px; overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 2px; background: #ffffff;">
+                  <button onClick="{{e.unlink}}" style="{{e.noneStyle}}">Not linked</button>
+                  <sc-for list="{{e.groups}}" as="g" hint-placeholder-count="1">
+                    <div style="padding: 10px 12px 4px; font-size: 12px; color: #71717a;">{{g.label}}</div>
+                    <sc-for list="{{g.opts}}" as="o" hint-placeholder-count="4">
+                      <button onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button>
+                    </sc-for>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+      <div style="padding: 14px 18px; margin-top: 4px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px;">
+        <button onClick="{{b.addEx}}" style="width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; background: #f0f0f0; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4V20M20 12H4"></path></svg>
+          Add exercise
+        </button>
+      </div>
+    </div>
+  </sc-for>
+  <button onClick="{{addBlock}}" style="align-self: center; display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 24px; border: none; background: #18181b; border-radius: 999px; font-size: 14px; font-weight: 500; color: #fafafa;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4V20M20 12H4"></path></svg>
+    Add block
+  </button>
+</div>
+</sc-if>
+
+<sc-if value="{{isLadders}}" hint-placeholder-val="{{false}}">
+<div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e4e4e7;">
+  <button onClick="{{goPlan}}" aria-label="Back to plan" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18"></path></svg>
+  </button>
+  <div style="display: flex; flex-direction: column;">
+    <span style="font-size: 13px; color: #71717a;">Plan</span>
+    <span style="font-size: 17px; font-weight: 600;">Ladders</span>
+  </div>
+</div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 32px; display: flex; flex-direction: column; gap: 12px;">
+  <sc-for list="{{onColList}}" as="c" hint-placeholder-count="2">
+    <button onClick="{{c.open}}" style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 18px; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; text-align: left; color: #09090b;">
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+        <span style="font-size: 17px; font-weight: 600;">{{c.name}}</span>
+        <span style="font-size: 13px; color: #71717a;">{{c.sub}}</span>
+      </div>
+      <span style="width: 40px; height: 40px; flex: none; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#09090b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6C9 6 15 10.4189 15 12C15 13.5812 9 18 9 18"></path></svg>
+      </span>
+    </button>
+  </sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isCollection}}" hint-placeholder-val="{{false}}">
+<div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e4e4e7;">
+  <button onClick="{{collBack}}" aria-label="Back" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18"></path></svg>
+  </button>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+    <span style="font-size: 13px; color: #71717a;">Ladders</span>
+    <span style="font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{col.name}}</span>
+  </div>
+  <button onClick="{{col.edit}}" style="height: 40px; padding: 0 18px; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">Edit</button>
+</div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 32px; display: flex; flex-direction: column; gap: 12px;">
+  <sc-for list="{{col.cats}}" as="c" hint-placeholder-count="3">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column; padding-bottom: 6px;">
+      <div style="padding: 18px 18px 6px; font-size: 14px; font-weight: 600;">{{c.name}}</div>
+      <sc-for list="{{c.ladders}}" as="l" hint-placeholder-count="2">
+        <button onClick="{{l.open}}" style="display: flex; align-items: center; gap: 12px; margin: 0 18px; padding: 14px 0; border: none; border-top: 1px solid #e4e4e7; background: transparent; text-align: left; color: #09090b; min-height: 60px;">
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 15px; font-weight: 600;">{{l.name}}</span>
+            <span style="font-size: 13px; color: #71717a;">{{l.sub}}</span>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6C9 6 15 10.4189 15 12C15 13.5812 9 18 9 18"></path></svg>
+        </button>
+      </sc-for>
+    </div>
+  </sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{isLadder}}" hint-placeholder-val="{{false}}">
+<div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e4e4e7;">
+  <button onClick="{{goCollection}}" aria-label="Back to collection" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18"></path></svg>
+  </button>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+    <span style="font-size: 13px; color: #71717a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{lad.colName}}</span>
+    <span style="font-size: 17px; font-weight: 600;">{{lad.name}}</span>
+  </div>
+</div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 32px; display: flex; flex-direction: column; gap: 12px;">
+  <div role="tablist" aria-label="Ladder view" style="display: flex; gap: 4px; padding: 4px; background: #e9e9eb; border-radius: 999px;">
+    <button role="tab" aria-selected="{{lad.isPosition}}" onClick="{{lad.showPosition}}" style="{{lad.posTabStyle}}">Position</button>
+    <button role="tab" aria-selected="{{lad.isGoals}}" onClick="{{lad.showGoals}}" style="{{lad.goalTabStyle}}">Goals</button>
+  </div>
+  <p style="margin: 0 4px; font-size: 13px; color: #71717a; line-height: 1.45;">{{lad.hint}}</p>
+
+  <sc-if value="{{lad.isPosition}}" hint-placeholder-val="{{true}}">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; padding: 8px; display: flex; flex-direction: column; gap: 4px;">
+      <sc-for list="{{lad.rungs}}" as="r" hint-placeholder-count="6">
+        <button onClick="{{r.mark}}" aria-pressed="{{r.isCurrent}}" style="{{r.rowStyle}}">
+          <span style="{{r.markerStyle}}">
+            <sc-if value="{{r.isCleared}}" hint-placeholder-val="{{false}}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 14L8.5 17.5L19 6.5"></path></svg>
+            </sc-if>
+            <sc-if value="{{r.notCleared}}" hint-placeholder-val="{{true}}">{{r.n}}</sc-if>
+          </span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+            <span style="font-size: 15px; font-weight: 600;">{{r.name}}</span>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <sc-if value="{{r.hasGoal}}" hint-placeholder-val="{{false}}">
+                <span style="{{r.chipStyle}}">Goal {{r.goal}}</span>
+              </sc-if>
+              <sc-if value="{{r.hasLinked}}" hint-placeholder-val="{{false}}">
+                <span style="{{r.chipStyle}}">{{r.linked}}</span>
+              </sc-if>
+            </div>
+          </div>
+          <sc-if value="{{r.isCurrent}}" hint-placeholder-val="{{false}}">
+            <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; background: #ffffff; color: #18181b; border-radius: 999px; padding: 3px 10px 3px 8px;"><span style="width: 7px; height: 7px; border-radius: 999px; background: #eab308;"></span>You're here</span>
+          </sc-if>
+        </button>
+      </sc-for>
+    </div>
+    <sc-if value="{{lad.hasPos}}" hint-placeholder-val="{{false}}">
+      <button onClick="{{lad.clear}}" style="align-self: center; height: 44px; padding: 0 18px; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">Clear position</button>
+    </sc-if>
+  </sc-if>
+
+  <sc-if value="{{lad.isGoals}}" hint-placeholder-val="{{false}}">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; padding: 6px 18px; display: flex; flex-direction: column;">
+      <sc-for list="{{lad.rungs}}" as="r" hint-placeholder-count="6">
+        <div style="{{r.goalRowStyle}}">
+          <span style="width: 30px; height: 30px; flex: none; border-radius: 999px; background: #f4f4f5; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #3f3f46;">{{r.n}}</span>
+          <label for="{{r.goalId}}" style="flex: 1; min-width: 0; font-size: 14px; font-weight: 500;">{{r.name}}</label>
+          <input id="{{r.goalId}}" type="text" value="{{r.goal}}" placeholder="e.g. 3×8" onChange="{{r.setGoal}}" style="width: 104px; height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 12px; font-size: 15px; color: #09090b; background: #ffffff;">
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isBuilder}}" hint-placeholder-val="{{false}}">
+<div style="flex: none; display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: #ffffff; border-bottom: 1px solid #e4e4e7;">
+  <button onClick="{{cancelBuilder}}" aria-label="Cancel" style="width: 40px; height: 40px; flex: none; display: flex; align-items: center; justify-content: center; border: none; background: #f4f4f5; border-radius: 999px; color: #09090b;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6L18 18"></path></svg>
+  </button>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+    <span style="font-size: 13px; color: #71717a;">{{bd.kicker}}</span>
+    <span style="font-size: 17px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{bd.title}}</span>
+  </div>
+  <button onClick="{{saveBuilder}}" style="height: 40px; padding: 0 20px; border: none; border-radius: 999px; background: #18181b; color: #fafafa; font-size: 14px; font-weight: 500;">Save</button>
+</div>
+<div class="scroll" style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 32px; display: flex; flex-direction: column; gap: 12px;">
+  <div style="display: flex; flex-direction: column; gap: 6px; padding: 0 4px;">
+    <label for="bd-name" style="font-size: 13px; font-weight: 500;">Collection name</label>
+    <input id="bd-name" type="text" value="{{bd.name}}" placeholder="e.g. Ring skills" onChange="{{bd.setName}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+  </div>
+  <sc-for list="{{bd.cats}}" as="c" hint-placeholder-count="1">
+    <div style="background: #ffffff; border: 1px solid #e4e4e7; border-radius: 28px; display: flex; flex-direction: column;">
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 18px 18px 6px;">
+        <label for="{{c.id}}" style="font-size: 13px; color: #71717a;">Category</label>
+        <input id="{{c.id}}" type="text" value="{{c.name}}" placeholder="e.g. Pull" onChange="{{c.setName}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; font-weight: 600; color: #09090b; background: #ffffff;">
+      </div>
+      <sc-for list="{{c.ladders}}" as="l" hint-placeholder-count="1">
+        <div style="margin: 12px 18px 0; padding: 14px; background: #f4f4f5; border-radius: 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <label for="{{l.id}}" style="font-size: 13px; font-weight: 500;">Ladder</label>
+            <input id="{{l.id}}" type="text" value="{{l.name}}" placeholder="e.g. Muscle Up" onChange="{{l.setName}}" style="height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px; color: #71717a; padding: 0 2px;"><span>Rungs, easiest first</span><span>Goal</span></div>
+          <sc-for list="{{l.rungs}}" as="r" hint-placeholder-count="3">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 28px; height: 28px; flex: none; border-radius: 999px; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #3f3f46;">{{r.n}}</span>
+              <input type="text" aria-label="{{r.aria}}" value="{{r.name}}" placeholder="Rung name" onChange="{{r.setName}}" style="flex: 1; min-width: 0; height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 14px; font-size: 15px; color: #09090b; background: #ffffff;">
+              <input type="text" aria-label="{{r.goalAria}}" value="{{r.goal}}" placeholder="3×8" onChange="{{r.setGoal}}" style="width: 76px; height: 44px; box-sizing: border-box; border: 1px solid #e4e4e7; border-radius: 16px; padding: 0 10px; font-size: 15px; color: #09090b; background: #ffffff;">
+            </div>
+          </sc-for>
+          <button onClick="{{l.addRung}}" style="align-self: flex-start; display: flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4V20M20 12H4"></path></svg>
+            Add rung
+          </button>
+        </div>
+      </sc-for>
+      <div style="padding: 14px 18px; margin-top: 14px; background: #fafafa; border-top: 1px solid #e4e4e7; border-radius: 0 0 27px 27px;">
+        <button onClick="{{c.addLadder}}" style="width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; background: #f0f0f0; border-radius: 999px; font-size: 14px; font-weight: 500; color: #09090b;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4V20M20 12H4"></path></svg>
+          Add ladder
+        </button>
+      </div>
+    </div>
+  </sc-for>
+  <button onClick="{{bd.addCategory}}" style="align-self: center; display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 24px; border: none; background: #18181b; border-radius: 999px; font-size: 14px; font-weight: 500; color: #fafafa;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 4V20M20 12H4"></path></svg>
+    Add category
+  </button>
+</div>
+</sc-if>
+
+<sc-if value="{{showDock}}" hint-placeholder-val="{{true}}">
+<div style="position: absolute; left: 0; right: 0; bottom: 20px; display: flex; justify-content: center; pointer-events: none;">
+  <nav role="tablist" aria-label="Navigation tabs" style="pointer-events: auto; display: flex; align-items: center; gap: 4px; padding: 6px; background: #ffffff; border: 1px solid #e4e4e7; border-radius: 26px; box-shadow: 0 8px 24px rgba(9,9,11,0.10), 0 1px 2px rgba(9,9,11,0.06);">
+    <sc-for list="{{dock}}" as="t" hint-placeholder-count="2">
+      <button role="tab" aria-selected="{{t.active}}" aria-label="{{t.label}}" onClick="{{t.go}}" style="{{t.style}}">
+        <sc-if value="{{t.isWeek}}" hint-placeholder-val="{{true}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M16 2V6M8 2V6"></path><path d="M13 4H11C7.229 4 5.343 4 4.172 5.172C3 6.343 3 8.229 3 12V14C3 17.771 3 19.657 4.172 20.828C5.343 22 7.229 22 11 22H13C16.771 22 18.657 22 19.828 20.828C21 19.657 21 17.771 21 14V12C21 8.229 21 6.343 19.828 5.172C18.657 4 16.771 4 13 4Z"></path><path d="M3 10H21"></path></svg>
+        </sc-if>
+        <sc-if value="{{t.isPlan}}" hint-placeholder-val="{{false}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="M11 6H21M11 12H21M11 18H21"></path><path d="M3 7.393C3 7.393 4 8.045 4.5 9C4.5 9 6 5.25 8 4"></path><path d="M3 18.393C3 18.393 4 19.045 4.5 20C4.5 20 6 16.25 8 15"></path></svg>
+        </sc-if>
+        <span style="{{t.labelStyle}}">{{t.label}}</span>
+      </button>
+    </sc-for>
+  </nav>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.sx = null;
+    this.swiped = false;
+    const workouts = [
+      { id: 'A', name: 'Upper A', blocks: [
+        { id: 'ab1', name: 'Pull + push', sets: 3, ex: [
+          { id: 'a1', name: 'Pull Up', target: '3×6', note: '', last: [6, 6, 5], link: 'pu4' },
+          { id: 'a2', name: 'Ring Dip', target: '3×8', note: '', last: [8, 7, 7], link: 'dp5' }
+        ] },
+        { id: 'ab2', name: 'Core', sets: 3, ex: [
+          { id: 'a3', name: 'Hollow Body Hold', target: '3×30s', note: '', last: [30, 30, 25], link: 'co2' }
+        ] }
+      ] },
+      { id: 'B', name: 'Lower B', blocks: [
+        { id: 'bb1', name: 'Legs', sets: 3, ex: [
+          { id: 'b1', name: 'Assisted Pistol', target: '3×5 / leg', note: 'red band', last: [5, 5, 4], link: 'sq3' }
+        ] },
+        { id: 'bb2', name: 'Row + hamstrings', sets: 3, ex: [
+          { id: 'b2', name: 'Ring Row', target: '3×10', note: '', last: [10, 10, 9], link: 'rw3' },
+          { id: 'b3', name: 'Nordic Curl Negative', target: '3×4', note: '', last: [4, 4, 3], link: '' }
+        ] }
+      ] }
+    ];
+    const archDone = {};
+    for (let k = 1; k <= 6; k++) ['s1', 's2', 's3'].forEach((id) => { archDone[k + ':' + id] = true; });
+    delete archDone['5:s2'];
+    this.state = {
+      screen: 'week', week: 3, slot: null, logWeek: 3, editId: null,
+      archId: null, archWeek: 1, vals: {},
+      cycle: { name: 'Cycle 2', objective: 'Ring dips 3×10 and a first assisted pistol without the band', weeks: 6, start: '2026-09-29', deload: 4, current: 3,
+        done: { '1:s1': true, '1:s2': true, '1:s3': true, '2:s1': true, '2:s2': true, '2:s3': true, '3:s1': true }, workouts },
+      past: [ { id: 'c1', name: 'Cycle 1', start: '2026-08-18', len: 6, deload: 4, done: archDone,
+        achievements: 'First strict pull up. Ring dips up to 3×7.', workouts: JSON.parse(JSON.stringify(workouts)) } ],
+      ending: false, achDraft: '', newCycleHint: false,
+      collections: [ this.bwf(), this.rings() ],
+      at: { pu: 4, dp: 5, sq: 3, co: 2, rw: 3, pp: 4 },
+      collId: 'bwf', ladderId: null, ladMode: 'position', pickFor: null,
+      draft: null, draftFor: null, builderBack: 'plan'
+    };
+  }
+
+  bwf() {
+    const goals = { pu4: '3×8', pu5: '3×5', dp5: '3×10', sq3: '3×5 / leg', sq4: '3×8 / leg', co2: '3×45s', rw3: '3×12' };
+    const L = (id, name, rungs) => ({ id, name, rungs: rungs.map((n, i) => ({ id: id + (i + 1), name: n, goal: goals[id + (i + 1)] || '' })) });
+    return { id: 'bwf', name: 'r/bodyweightfitness Progressions', short: 'BWF', note: 'v5.4 · sample of 6 ladders', on: true, categories: [
+      { id: 'pull', name: 'Pull', ladders: [
+        L('pu', 'Pull Ups', ['Scapular Pull', 'Arch Hang', 'Negative Pull Up', 'Pull Up', 'L-sit Pull Up', 'Wide Pull Up', 'Archer Pull Up', 'Assisted One-arm Pull Up', 'One-arm Pull Up']),
+        L('rw', 'Rows', ['Vertical Row', 'Incline Row', 'Ring Row', 'Wide Ring Row', 'Tuck Front Lever Row', 'Archer Row', 'Front Lever Row'])
+      ] },
+      { id: 'push', name: 'Push', ladders: [
+        L('dp', 'Dips', ['Parallel Bar Support', 'Negative Dip', 'Parallel Bar Dip', 'Ring Support', 'Ring Dip', 'Ring L-sit Dip', 'Russian Dip', 'Weighted Ring Dip']),
+        L('pp', 'Pushups', ['Incline Pushup', 'Knee Pushup', 'Pushup', 'Diamond Pushup', 'Decline Pushup', 'Ring Pushup', 'Archer Pushup', 'Pseudo Planche Pushup', 'One-arm Pushup'])
+      ] },
+      { id: 'legs', name: 'Legs', ladders: [
+        L('sq', 'Squats', ['Bodyweight Squat', 'Split Squat', 'Assisted Pistol', 'Bulgarian Split Squat', 'Beginner Shrimp', 'Pistol Squat', 'Intermediate Shrimp', 'Advanced Shrimp', 'Deep Step-up', 'Weighted Pistol'])
+      ] },
+      { id: 'core', name: 'Core', ladders: [
+        L('co', 'Core', ['Plank', 'Hollow Body Hold', 'Hanging Knee Raise', 'Ab Wheel from Knees', 'Hanging Leg Raise', 'L-sit', 'Dragon Flag'])
+      ] }
+    ] };
+  }
+
+  rings() {
+    const L = (id, name, rungs) => ({ id, name, rungs: rungs.map((n, i) => ({ id: id + (i + 1), name: n, goal: '' })) });
+    return { id: 'rings', name: 'Ring skills (sample)', short: 'Rings', note: '', on: false, categories: [
+      { id: 'skills', name: 'Skills', ladders: [
+        L('mu', 'Muscle Up', ['False Grip Hang', 'False Grip Row', 'Transition Negative', 'Jumping Muscle Up', 'Muscle Up'])
+      ] }
+    ] };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const C = s.cycle;
+    const plan = [ { id: 's1', day: 'Mon', w: 'A' }, { id: 's2', day: 'Wed', w: 'B' }, { id: 's3', day: 'Fri', w: 'A' } ];
+    const go = (screen) => () => this.setState({ screen, newCycleHint: false });
+    const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const addDays = (iso, n) => { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d; };
+    const fmt = (d) => isNaN(d) ? '—' : d.getUTCDate() + ' ' + MON[d.getUTCMonth()];
+    const count = (w) => w.blocks.reduce((n, b) => n + b.ex.length, 0);
+    const uid = () => 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+    const RI = {};
+    const LI = {};
+    s.collections.forEach((col) => col.categories.forEach((cat) => cat.ladders.forEach((l) => {
+      LI[l.id] = { col, l };
+      l.rungs.forEach((r, i) => { RI[r.id] = { col, l, pos: i + 1, len: l.rungs.length, name: r.name }; });
+    })));
+    const onCols = s.collections.filter((c) => c.on);
+    const multiOn = onCols.length > 1;
+    const badgeFor = (rid) => { const x = RI[rid]; if (!x || !x.col.on) return ''; return (multiOn ? x.col.short + ' · ' : '') + x.l.name + ' ' + x.pos + '/' + x.len; };
+    const pickLabel = (rid) => { const x = RI[rid]; if (!x) return ''; return (multiOn ? x.col.short + ' · ' : '') + x.l.name + ' — ' + x.name + ' (' + x.pos + '/' + x.len + ')'; };
+    const colCounts = (col) => {
+      let lad = 0, rung = 0;
+      col.categories.forEach((c) => c.ladders.forEach((l) => { lad++; rung += l.rungs.length; }));
+      return col.categories.length + ' categories · ' + lad + ' ladders · ' + rung + ' rungs';
+    };
+
+    const isArchCycle = s.screen === 'archCycle';
+    const arch = s.past.find((c) => c.id === s.archId) || s.past[0];
+    const weekKey = isArchCycle ? 'archWeek' : 'week';
+    const setWeek = (n) => this.setState({ [weekKey]: n });
+    const navBtn = (disabled) => 'width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #e4e4e7; background: #ffffff; border-radius: 999px; color: #09090b;' + (disabled ? ' opacity: 0.35;' : '');
+    const cellBase = 'width: 40px; height: 32px; box-sizing: border-box; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; font-family: inherit; padding: 0;';
+
+    const buildWeek = (c, n0, isLive) => {
+      const n = Math.max(1, Math.min(n0, c.len));
+      const Wm = {};
+      c.workouts.forEach((w) => { Wm[w.id] = w; });
+      const strip = [];
+      for (let k = 1; k <= c.len; k++) {
+        const completed = isLive ? k < c.current : true;
+        const selected = k === n;
+        let st = cellBase;
+        if (selected) st += 'background: #18181b; color: #fafafa; border: 1px solid #18181b;';
+        else if (k === c.deload) st += 'background: #ffffff; color: ' + (completed ? '#71717a' : '#3f3f46') + '; border: 1px dashed #a1a1aa;';
+        else st += 'background: #f4f4f5; color: ' + (completed ? '#71717a' : '#3f3f46') + '; border: 1px solid #f4f4f5;';
+        if (completed) st += ' text-decoration: line-through; text-decoration-thickness: 1.5px;';
+        const tag = isLive && k === c.current ? 'Now' : (k === c.deload ? 'Deload' : '');
+        strip.push({ n: k, cellStyle: st, tag, selected, aria: 'Week ' + k + (completed ? ', completed' : ''), pick: () => setWeek(k) });
+      }
+      const past = !isLive || n < c.current;
+      let weekDone = 0;
+      const slots = plan.map((p) => {
+        const done = !!c.done[n + ':' + p.id];
+        if (done) weekDone++;
+        const w = Wm[p.w];
+        return { day: p.day, name: w ? w.name : '—', sub: (w ? count(w) : 0) + ' exercises' + (n === c.deload ? ' · deload' : ''),
+          done, missed: !done && past, showChevron: isLive && !done && !past, readOnly: !isLive,
+          open: () => { if (this.swiped) { this.swiped = false; return; } this.setState({ screen: 'log', slot: p.id, logWeek: n }); } };
+      });
+      let status, dot = '#a1a1aa';
+      if (isLive) {
+        if (n === c.current) { status = 'This week'; dot = '#eab308'; }
+        else if (n < c.current) { status = 'Past week'; dot = '#71717a'; }
+        else { status = 'Upcoming'; dot = '#d4d4d8'; }
+      } else { status = weekDone + ' of ' + plan.length + ' done'; dot = '#18181b'; }
+      let total = 0;
+      Object.keys(c.done).forEach((k) => { if (c.done[k]) total++; });
+      return {
+        n, total: c.len,
+        range: fmt(addDays(c.start, 7 * (n - 1))) + ' – ' + fmt(addDays(c.start, 7 * (n - 1) + 6)),
+        started: 'Started ' + fmt(addDays(c.start, 0)),
+        strip, slots, status,
+        dotStyle: 'width: 8px; height: 8px; border-radius: 999px; background: ' + dot + ';',
+        isDeload: n === c.deload,
+        canJump: isLive && n !== c.current, jump: () => setWeek(c.current),
+        prevDisabled: n <= 1, nextDisabled: n >= c.len, prevStyle: navBtn(n <= 1), nextStyle: navBtn(n >= c.len),
+        prev: () => setWeek(Math.max(1, n - 1)), next: () => setWeek(Math.min(c.len, n + 1)),
+        hasSummary: !isLive, summary: total + ' of ' + (c.len * plan.length),
+        hasAchievements: !isLive && !!c.achievements, achievements: c.achievements || ''
+      };
+    };
+    let wk = null;
+    if (isArchCycle && arch) wk = buildWeek(arch, s.archWeek, false);
+    else if (C) wk = buildWeek({ start: C.start, len: C.weeks, deload: C.deload, current: C.current, done: C.done, workouts: C.workouts }, s.week, true);
+    const curN = wk ? wk.n : 1;
+    const curLen = wk ? wk.total : 1;
+    const swipeDown = (e) => { this.sx = e.clientX; this.sy = e.clientY; this.swiped = false; };
+    const swipeUp = (e) => {
+      if (this.sx == null) return;
+      const dx = e.clientX - this.sx, dy = e.clientY - this.sy;
+      this.sx = null;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        this.swiped = true;
+        const next = Math.min(curLen, Math.max(1, curN + (dx < 0 ? 1 : -1)));
+        if (next !== curN) setWeek(next);
+      }
+    };
+
+    const W = {};
+    if (C) C.workouts.forEach((w) => { W[w.id] = w; });
+    const cur = plan.find((p) => p.id === s.slot);
+    let blocks = [], logDay = '', logName = '';
+    if (cur && C && W[cur.w]) {
+      const w = W[cur.w];
+      logDay = cur.day; logName = w.name;
+      blocks = w.blocks.map((b, bi) => {
+        const multi = b.ex.length > 1;
+        const heads = b.ex.map((e) => { const short = badgeFor(e.link); return { name: e.name || 'Untitled', target: e.target || '—', note: e.note, hasNote: !!e.note, showLink: !!short, linkShort: short }; });
+        const rows = [];
+        for (let r = 0; r < b.sets; r++) {
+          const cells = b.ex.map((e) => {
+            const key = s.logWeek + ':' + s.slot + ':' + e.id + ':' + r;
+            const prev = e.last && e.last[r] != null ? e.last[r] : null;
+            return { value: s.vals[key] ?? '', last: prev != null ? 'Last ' + prev : 'No previous',
+              aria: (e.name || 'Exercise') + ', set ' + (r + 1) + (prev != null ? ', last time ' + prev : ''),
+              set: (ev) => { const v = ev.target.value; this.setState((st) => ({ vals: { ...st.vals, [key]: v } })); } };
+          });
+          rows.push({ label: (multi ? 'R' : 'S') + (r + 1), cells });
+        }
+        return { name: b.name || ('Block ' + String.fromCharCode(65 + bi)), title: multi ? 'Superset · ' + b.sets + ' rounds' : b.sets + ' sets', heads, rows };
+      });
+    }
+    const doneKey = s.logWeek + ':' + s.slot;
+
+    const setC = (fn) => this.setState((st) => { const c = JSON.parse(JSON.stringify(st.cycle)); fn(c); return { cycle: c }; });
+    const cy = C ? {
+      name: C.name, objective: C.objective || 'Not set', objectiveRaw: C.objective, weeks: String(C.weeks), deload: C.deload ? String(C.deload) : '', start: C.start,
+      nowLabel: 'Week ' + C.current + ' of ' + C.weeks,
+      workoutsLabel: C.workouts.length + ' · ' + plan.length + ' sessions a week',
+      startLabel: fmt(addDays(C.start, 0)), deloadLabel: C.deload ? 'Week ' + C.deload : 'None',
+      setName: (ev) => { const v = ev.target.value; setC((c) => { c.name = v; }); },
+      setObjective: (ev) => { const v = ev.target.value; setC((c) => { c.objective = v; }); },
+      setWeeks: (ev) => { const v = parseInt(ev.target.value, 10); setC((c) => { c.weeks = isNaN(v) ? 1 : Math.max(1, Math.min(16, v)); c.current = Math.min(c.current, c.weeks); if (c.deload > c.weeks) c.deload = 0; }); },
+      setDeload: (ev) => { const v = parseInt(ev.target.value, 10); setC((c) => { c.deload = isNaN(v) ? 0 : Math.max(0, Math.min(c.weeks, v)); }); },
+      setStart: (ev) => { const v = ev.target.value; if (v) setC((c) => { c.start = v; }); }
+    } : { name: '' };
+
+    const workoutsList = C ? C.workouts.map((w) => {
+      const days = plan.filter((p) => p.w === w.id).map((p) => p.day);
+      return { name: w.name, sub: count(w) + ' exercises · ' + (days.length ? days.join(', ') : 'Not scheduled'),
+        edit: () => this.setState({ screen: 'edit', editId: w.id, pickFor: null }) };
+    }) : [];
+    const newWorkout = () => {
+      const id = uid();
+      setC((c) => { c.workouts.push({ id, name: 'New workout', blocks: [ { id: uid(), name: 'Block A', sets: 3, ex: [ { id: uid(), name: '', target: '', note: '', last: [], link: '' } ] } ] }); });
+      this.setState({ screen: 'edit', editId: id, pickFor: null });
+    };
+
+    const endCycle = () => this.setState((st) => {
+      const c = st.cycle;
+      if (!c || !st.achDraft.trim()) return {};
+      return { past: [ { id: uid(), name: c.name, start: c.start, len: c.weeks, deload: c.deload, done: c.done, achievements: st.achDraft.trim(), workouts: JSON.parse(JSON.stringify(c.workouts)) }, ...st.past ],
+        cycle: null, ending: false, achDraft: '', screen: 'plan' };
+    });
+    const newCycle = () => this.setState((st) => {
+      if (st.cycle) return { newCycleHint: true };
+      const src = st.past[0] ? st.past[0].workouts : [];
+      return { cycle: { name: 'Cycle ' + (st.past.length + 1), objective: '', weeks: 6, start: '2026-10-19', deload: 4, current: 1, done: {}, workouts: JSON.parse(JSON.stringify(src)) },
+        week: 1, screen: 'cycle', newCycleHint: false };
+    });
+
+    const mutate = (fn) => setC((c) => { fn(c.workouts.find((x) => x.id === s.editId)); });
+    const ew = C ? C.workouts.find((w) => w.id === s.editId) : null;
+    const optBase = 'width: 100%; min-height: 44px; padding: 8px 12px; border: none; border-radius: 14px; text-align: left; font-size: 15px;';
+    const editBlocks = [];
+    if (ew) {
+      ew.blocks.forEach((b, bi) => {
+        const letter = String.fromCharCode(65 + bi);
+        const multi = b.ex.length > 1;
+        editBlocks.push({
+          letter, multi, name: b.name || '', nameId: 'bn-' + b.id,
+          setName: (ev) => { const v = ev.target.value; mutate((w) => { w.blocks.find((x) => x.id === b.id).name = v; }); },
+          setsLabel: multi ? 'Rounds' : 'Sets', setsId: 'sets-' + b.id, sets: String(b.sets),
+          setSets: (ev) => { const v = parseInt(ev.target.value, 10); mutate((w) => { w.blocks.find((x) => x.id === b.id).sets = isNaN(v) ? 1 : Math.max(1, Math.min(10, v)); }); },
+          addEx: () => mutate((w) => { w.blocks.find((x) => x.id === b.id).ex.push({ id: uid(), name: '', target: '', note: '', last: [], link: '' }); }),
+          exs: b.ex.map((e, ei) => {
+            const upd = (field) => (ev) => { const v = ev.target.value; mutate((w) => { w.blocks.forEach((bb) => bb.ex.forEach((x) => { if (x.id === e.id) x[field] = v; })); }); };
+            const setLink = (v) => { mutate((w) => { w.blocks.forEach((bb) => bb.ex.forEach((x) => { if (x.id === e.id) x.link = v; })); }); this.setState({ pickFor: null }); };
+            const open = s.pickFor === e.id;
+            const label = e.link ? pickLabel(e.link) : '';
+            let groups = [];
+            if (open) {
+              groups = onCols.map((col) => {
+                const opts = [];
+                col.categories.forEach((cat) => cat.ladders.forEach((l) => l.rungs.forEach((r, i) => {
+                  const sel = r.id === e.link;
+                  opts.push({ label: l.name + ' — ' + r.name + ' (' + (i + 1) + '/' + l.rungs.length + ')', pick: () => setLink(r.id),
+                    style: optBase + (sel ? ' background: #18181b; color: #fafafa; font-weight: 500;' : ' background: transparent; color: #09090b;') });
+                })));
+                return { label: col.name, opts };
+              });
+            }
+            return { tag: letter + (multi ? (ei + 1) : ''), name: e.name, target: e.target, note: e.note,
+              chartOn: onCols.length > 0, nid: 'n-' + e.id, tid: 't-' + e.id, oid: 'o-' + e.id,
+              rowStyle: 'margin: 0 18px; padding: 16px 0; display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #e4e4e7;',
+              setName: upd('name'), setTarget: upd('target'), setNote: upd('note'),
+              open, groups, linkLabel: label || 'Not linked', pickAria: 'Rung: ' + (label || 'not linked'),
+              linkLabelStyle: label ? 'color: #09090b;' : 'color: #71717a;',
+              togglePick: () => this.setState((st) => ({ pickFor: st.pickFor === e.id ? null : e.id })),
+              unlink: () => setLink(''),
+              noneStyle: optBase + (!e.link ? ' background: #18181b; color: #fafafa; font-weight: 500;' : ' background: transparent; color: #09090b;') };
+          })
+        });
+      });
+    }
+    const addBlock = () => mutate((w) => { w.blocks.push({ id: uid(), name: 'Block ' + String.fromCharCode(65 + w.blocks.length), sets: 3, ex: [ { id: uid(), name: '', target: '', note: '', last: [], link: '' } ] }); });
+    const setWorkoutName = (ev) => { const v = ev.target.value; mutate((w) => { w.name = v; }); };
+
+    const pastList = s.past.map((p) => ({
+      period: fmt(addDays(p.start, 0)) + ' – ' + fmt(addDays(p.start, 7 * p.len - 1)),
+      achievements: p.achievements || 'No achievements written',
+      achStyle: 'font-size: 14px; line-height: 1.45; color: ' + (p.achievements ? '#52525b' : '#a1a1aa') + ';',
+      open: () => this.setState({ screen: 'archCycle', archId: p.id, archWeek: 1 })
+    }));
+    const colRows = s.collections.map((col) => ({
+      name: col.name, sub: col.note || colCounts(col), on: col.on, aria: 'Use ' + col.name,
+      track: 'width: 52px; height: 32px; flex: none; border: none; border-radius: 999px; padding: 4px; display: flex; background: ' + (col.on ? '#18181b' : '#d4d4d8') + '; justify-content: ' + (col.on ? 'flex-end' : 'flex-start') + ';',
+      toggle: () => this.setState((st) => ({ collections: st.collections.map((c) => c.id === col.id ? { ...c, on: !c.on } : c) }))
+    }));
+    const openLadders = () => {
+      if (onCols.length === 1) this.setState({ screen: 'collection', collId: onCols[0].id });
+      else this.setState({ screen: 'ladders' });
+    };
+
+    const onColList = onCols.map((col) => ({ name: col.name, sub: col.note || colCounts(col), open: () => this.setState({ screen: 'collection', collId: col.id }) }));
+    const colObj = s.collections.find((c) => c.id === s.collId);
+    const linkedTo = (rid) => {
+      const out = [];
+      if (C) C.workouts.forEach((w) => w.blocks.forEach((b) => b.ex.forEach((e) => { if (e.link === rid) out.push((e.name || 'Untitled') + ' · ' + w.name); })));
+      return out;
+    };
+    const openBuilder = (col) => this.setState({
+      screen: 'builder', draftFor: col ? col.id : null, builderBack: col ? 'collection' : 'plan',
+      draft: col ? { name: col.name, categories: JSON.parse(JSON.stringify(col.categories)) }
+        : { name: '', categories: [ { id: uid(), name: '', ladders: [ { id: uid(), name: '', rungs: [ { id: uid(), name: '', goal: '' } ] } ] } ] }
+    });
+    const col = colObj ? {
+      name: colObj.name, edit: () => openBuilder(colObj),
+      cats: colObj.categories.map((cat) => ({ name: cat.name || 'Untitled category', ladders: cat.ladders.map((l) => {
+        const at = s.at[l.id];
+        const nLinked = l.rungs.reduce((n, r) => n + linkedTo(r.id).length, 0);
+        return { name: l.name || 'Untitled ladder',
+          sub: (at && l.rungs[at - 1] ? 'At ' + l.rungs[at - 1].name + ' · ' + at + '/' + l.rungs.length : 'No position set · ' + l.rungs.length + ' rungs') + (nLinked ? ' · ' + nLinked + ' linked' : ''),
+          open: () => this.setState({ screen: 'ladder', ladderId: l.id }) };
+      }) }))
+    } : { name: '', cats: [] };
+    const collBack = () => this.setState({ screen: multiOn ? 'ladders' : 'plan' });
+
+    const Lx = LI[s.ladderId];
+    const tabBase = 'flex: 1; height: 40px; border: none; border-radius: 999px; font-size: 14px; font-weight: 500;';
+    const tabOn = tabBase + ' background: #ffffff; color: #09090b; box-shadow: 0 1px 2px rgba(9,9,11,0.08);';
+    const tabOff = tabBase + ' background: transparent; color: #71717a;';
+    let lad = { name: '', colName: '', rungs: [], hasPos: false };
+    if (Lx) {
+      const at = s.at[Lx.l.id] || 0;
+      const isGoals = s.ladMode === 'goals';
+      const setRungGoal = (rid, v) => this.setState((st) => ({ collections: st.collections.map((c) => c.id !== Lx.col.id ? c : { ...c,
+        categories: c.categories.map((cat) => ({ ...cat, ladders: cat.ladders.map((l) => l.id !== Lx.l.id ? l : { ...l, rungs: l.rungs.map((r) => r.id === rid ? { ...r, goal: v } : r) }) })) }) }));
+      lad = { name: Lx.l.name, colName: Lx.col.name, hasPos: at > 0, isGoals, isPosition: !isGoals,
+        hint: isGoals ? 'Set a target for each rung — reps, a hold time, anything. It shows on the rung; nothing checks it for you.' : 'Tap a rung to mark where you are. Only you move it.',
+        showPosition: () => this.setState({ ladMode: 'position' }), showGoals: () => this.setState({ ladMode: 'goals' }),
+        posTabStyle: isGoals ? tabOff : tabOn, goalTabStyle: isGoals ? tabOn : tabOff,
+        clear: () => this.setState((st) => { const a = { ...st.at }; delete a[Lx.l.id]; return { at: a }; }),
+        rungs: Lx.l.rungs.map((r, i) => {
+          const n = i + 1, isCurrent = n === at, isCleared = at > 0 && n < at;
+          const linked = linkedTo(r.id);
+          return { n, name: r.name || 'Untitled rung', isCurrent, isCleared, notCleared: !isCleared,
+            goal: r.goal || '', hasGoal: !!r.goal, goalId: 'goal-' + r.id,
+            setGoal: (ev) => { const v = ev.target.value; setRungGoal(r.id, v); },
+            goalRowStyle: 'display: flex; align-items: center; gap: 12px; padding: 12px 0;' + (i > 0 ? ' border-top: 1px solid #e4e4e7;' : ''),
+            hasLinked: linked.length > 0, linked: 'Linked: ' + linked.join(', '),
+            chipStyle: 'font-size: 12px; font-weight: 500; border-radius: 999px; padding: 2px 9px; ' + (isCurrent ? 'background: rgba(255,255,255,0.14); color: #fafafa;' : 'background: #f4f4f5; color: #3f3f46;'),
+            rowStyle: 'display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 12px; border: none; border-radius: 22px; text-align: left; ' + (isCurrent ? 'background: #18181b; color: #fafafa;' : 'background: transparent; color: ' + (isCleared ? '#52525b' : '#09090b') + ';'),
+            markerStyle: 'width: 30px; height: 30px; flex: none; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; ' + (isCurrent ? 'background: #fafafa; color: #18181b;' : (isCleared ? 'background: #18181b; color: #fafafa;' : 'background: #f4f4f5; color: #3f3f46;')),
+            mark: () => this.setState((st) => ({ at: { ...st.at, [Lx.l.id]: n } })) };
+        }) };
+    }
+
+    const md = (fn) => this.setState((st) => { const d = JSON.parse(JSON.stringify(st.draft)); fn(d); return { draft: d }; });
+    const D = s.draft;
+    const bd = D ? {
+      kicker: s.draftFor ? 'Edit collection' : 'New collection', title: D.name || 'Untitled collection', name: D.name,
+      setName: (ev) => { const v = ev.target.value; md((d) => { d.name = v; }); },
+      addCategory: () => md((d) => { d.categories.push({ id: uid(), name: '', ladders: [ { id: uid(), name: '', rungs: [ { id: uid(), name: '', goal: '' } ] } ] }); }),
+      cats: D.categories.map((c, ci) => ({
+        id: 'cat-' + c.id, name: c.name,
+        setName: (ev) => { const v = ev.target.value; md((d) => { d.categories[ci].name = v; }); },
+        addLadder: () => md((d) => { d.categories[ci].ladders.push({ id: uid(), name: '', rungs: [ { id: uid(), name: '', goal: '' } ] }); }),
+        ladders: c.ladders.map((l, li) => ({
+          id: 'lad-' + l.id, name: l.name,
+          setName: (ev) => { const v = ev.target.value; md((d) => { d.categories[ci].ladders[li].name = v; }); },
+          addRung: () => md((d) => { d.categories[ci].ladders[li].rungs.push({ id: uid(), name: '', goal: '' }); }),
+          rungs: l.rungs.map((r, ri) => ({ n: ri + 1, name: r.name, goal: r.goal || '', aria: 'Rung ' + (ri + 1), goalAria: 'Goal for rung ' + (ri + 1),
+            setName: (ev) => { const v = ev.target.value; md((d) => { d.categories[ci].ladders[li].rungs[ri].name = v; }); },
+            setGoal: (ev) => { const v = ev.target.value; md((d) => { d.categories[ci].ladders[li].rungs[ri].goal = v; }); } }))
+        }))
+      }))
+    } : { cats: [] };
+    const saveBuilder = () => this.setState((st) => {
+      const d = st.draft;
+      if (!d) return {};
+      const name = d.name.trim() || 'Untitled collection';
+      if (st.draftFor) {
+        return { collections: st.collections.map((c) => c.id === st.draftFor ? { ...c, name, categories: d.categories } : c), draft: null, screen: 'collection', collId: st.draftFor };
+      }
+      const id = uid();
+      return { collections: [ ...st.collections, { id, name, short: name.split(' ')[0], note: '', on: true, categories: d.categories } ], draft: null, screen: 'collection', collId: id };
+    });
+
+    const scr = s.screen;
+    const dockBase = 'height: 40px; display: flex; align-items: center; border: none; border-radius: 18px; font-size: 14px; font-weight: 500; transition: background 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s;';
+    const tabs = [ { id: 'week', label: 'Week', go: go('week') }, { id: 'plan', label: 'Plan', go: go('plan') } ];
+    const dock = tabs.map((t) => {
+      const active = scr === t.id;
+      return { label: t.label, go: t.go, active, isWeek: t.id === 'week', isPlan: t.id === 'plan',
+        style: dockBase + (active ? ' padding: 0 16px 0 12px; background: rgba(9,9,11,0.08); color: #09090b;' : ' padding: 0 12px; background: transparent; color: #71717a;'),
+        labelStyle: 'display: inline-block; overflow: hidden; white-space: nowrap; transition: max-width 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s, margin 0.3s; ' + (active ? 'max-width: 80px; opacity: 1; margin-left: 8px;' : 'max-width: 0; opacity: 0; margin-left: 0;') };
+    });
+
+    const ending = !!s.ending;
+    const endDisabled = !s.achDraft.trim();
+    return {
+      showWeekBody: (scr === 'week' && !!C) || (isArchCycle && !!arch), isArch: isArchCycle, isWeekEmpty: scr === 'week' && !C,
+      weekScrollStyle: 'flex: 1; min-height: 0; overflow-y: auto; touch-action: pan-y; padding: 24px 16px ' + (isArchCycle ? '32px' : '112px') + '; display: flex; flex-direction: column; gap: 16px;',
+      isLog: scr === 'log', isPlan: scr === 'plan', isCycle: scr === 'cycle' && !!C, isEdit: scr === 'edit' && !!ew,
+      isLadders: scr === 'ladders', isCollection: scr === 'collection' && !!colObj, isLadder: scr === 'ladder' && !!Lx, isBuilder: scr === 'builder' && !!D,
+      showDock: scr === 'week' || scr === 'plan', dock,
+      goWeek: go('week'), goPlan: go('plan'), goCycle: () => this.setState({ screen: 'cycle', pickFor: null }), goCollection: go('collection'),
+      wk: wk || { strip: [], slots: [] }, swipeDown, swipeUp, archTitle: arch ? arch.name : '',
+      blocks, logDay, logName, logWeek: s.logWeek,
+      complete: () => this.setState((st) => ({ cycle: { ...st.cycle, done: { ...st.cycle.done, [st.logWeek + ':' + st.slot]: true } }, screen: 'week', week: st.logWeek })),
+      completeLabel: C && C.done[doneKey] ? 'Update session' : 'Complete session',
+      hasCycle: !!C, noCycle: !C, cy, newCycle, newCycleHint: s.newCycleHint,
+      pastList, noPast: s.past.length === 0,
+      colRows, anyOn: onCols.length > 0, openLadders,
+      addCollection: () => openBuilder(null),
+      workoutsList, newWorkout,
+      ending, notEnding: !ending, achDraft: s.achDraft,
+      startEnding: () => this.setState({ ending: true }), cancelEnding: () => this.setState({ ending: false }),
+      setAch: (ev) => { const v = ev.target.value; this.setState({ achDraft: v }); },
+      endCycle, endDisabled,
+      endBtnStyle: 'height: 44px; padding: 0 22px; border: none; border-radius: 999px; font-size: 14px; font-weight: 500; ' + (endDisabled ? 'background: #e4e4e7; color: #71717a;' : 'background: #18181b; color: #fafafa;'),
+      editName: ew ? ew.name : '', editBlocks, addBlock, setWorkoutName,
+      onColList, col, collBack, lad,
+      bd, saveBuilder, cancelBuilder: () => this.setState((st) => ({ draft: null, screen: st.builderBack }))
+    };
+  }
+}
+</script>
+</body>
+</html>

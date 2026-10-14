@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bodyweight Ladders v2 - components</title>
+<link rel="stylesheet" href="../../styles.css">
+<style>
+  /* Gallery layout only. Every component comes from styles.css and ui.js. */
+  .gallery {
+    width: 390px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 16px 0 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .g-sec { display: flex; flex-direction: column; gap: 10px; }
+  .g-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .g-note { font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .g-label { font-size: 12px; color: var(--muted); }
+
+  /* A 390px phone-width frame. Transform makes it the containing block for the fixed dock. */
+  .frame {
+    position: relative;
+    transform: translateZ(0);
+    width: 390px;
+    max-width: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+  }
+  .frame.pad { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .frame.dock-frame { height: 96px; }
+  .frame.swipe { min-height: 120px; padding: 16px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+
+  .swatches { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .swatch { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.3; }
+  .swatch-chip { flex: none; width: 28px; height: 28px; border-radius: 999px; border: 1px solid var(--card-border); }
+
+  .type-row { display: flex; flex-direction: column; gap: 2px; }
+  .type-meta { font-size: 11px; color: var(--muted); }
+
+  .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .icon-cell {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 12px 4px; background: var(--card); border: 1px solid var(--card-border); border-radius: 20px;
+  }
+  .icon-cell span { font-size: 11px; color: var(--muted); }
+
+  .row-of { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+  .log-line { font-size: 13px; color: var(--soft); min-height: 1.4em; }
+</style>
+</head>
+<body>
+<main class="gallery" id="gallery"></main>
+
+<script src="../../ui.js"></script>
+<script>
+(function () {
+  'use strict';
+  var h = UI.h;
+  var icon = UI.icon;
+  var main = document.getElementById('gallery');
+
+  var logEl = h('p', { class: 'log-line', 'aria-live': 'polite' }, 'Taps and swipes show here.');
+  function log(text) { logEl.textContent = text; }
+  function noop() {}
+
+  function section(title, note) {
+    var nodes = Array.prototype.slice.call(arguments, 2);
+    main.appendChild(h('section', { class: 'g-sec' },
+      h('h2', { class: 'g-title' }, title),
+      note ? h('p', { class: 'g-note' }, note) : null,
+      nodes));
+  }
+  function label(text) { return h('p', { class: 'g-label' }, text); }
+
+  // Frame helpers
+  function pad(children, extra) {
+    return h('div', { class: 'frame pad' + (extra ? ' ' + extra : '') }, children);
+  }
+  function flush(children, extra) {
+    return h('div', { class: 'frame' + (extra ? ' ' + extra : '') }, children);
+  }
+
+  // ---- Event log ----
+  main.appendChild(h('section', { class: 'g-sec' },
+    h('h2', { class: 'g-title' }, 'Gallery'),
+    h('p', { class: 'g-note' }, 'Every component from styles.css and ui.js at 390px. Each section shows the states named in the spec.'),
+    logEl));
+
+  // ---- Tokens ----
+  var tokens = [
+    ['Page', '--bg'], ['Card', '--card'], ['Card border', '--card-border'], ['Footer band', '--foot'],
+    ['Inset', '--inset'], ['Text', '--text'], ['Muted', '--muted'], ['Soft', '--soft'],
+    ['Idle', '--idle'], ['Primary', '--primary'], ['Accent', '--accent'], ['Toggle off', '--toggle-off'],
+    ['Tertiary', '--tertiary'], ['Segment', '--seg']
+  ];
+  var cs = getComputedStyle(document.documentElement);
+  section('Tokens', 'Only colour besides the zinc greys is the accent.',
+    h('div', { class: 'swatches' }, tokens.map(function (t) {
+      var hex = cs.getPropertyValue(t[1]).trim();
+      return h('div', { class: 'swatch' },
+        h('span', { class: 'swatch-chip', style: { background: 'var(' + t[1] + ')' } }),
+        h('span', {}, t[0] + ' ' + hex));
+    })));
+
+  // ---- Type scale ----
+  section('Type scale', 'Oxanium throughout, tabular numerals.',
+    h('div', { class: 'frame pad' }, [
+      h('div', { class: 'type-row' }, h('span', { class: 'week-heading' }, 'Week 3 of 6'), h('span', { class: 'type-meta' }, '.week-heading 32px bold')),
+      h('div', { class: 'type-row' }, h('span', { class: 'cycle-name' }, 'Cycle 2'), h('span', { class: 'type-meta' }, '.cycle-name 22px bold')),
+      h('div', { class: 'type-row' }, h('span', { class: 'hdr-title' }, 'Edit workout'), h('span', { class: 'type-meta' }, '.hdr-title 17px semibold')),
+      h('div', { class: 'type-row' }, h('span', { class: 'card-title', style: { padding: '0' } }, 'Workouts'), h('span', { class: 'type-meta' }, '.card-title 14px semibold')),
+      h('div', { class: 'type-row' }, h('span', { class: 'row-title' }, 'Pull Up'), h('span', { class: 'type-meta' }, '.row-title 15px semibold')),
+      h('div', { class: 'type-row' }, h('span', { class: 'card-sub' }, 'When they ran and what they got you.'), h('span', { class: 'type-meta' }, '.card-sub 13px muted')),
+      h('div', { class: 'type-row' }, h('span', { class: 'field-label' }, 'Deload week'), h('span', { class: 'type-meta' }, '.field-label 13px medium'))
+    ]));
+
+  // ---- Header ----
+  section('Header', 'Round back or close button, title stack, optional right-side action.',
+    flush([
+      UI.header({ onBack: noop, backIcon: 'back', sub: 'Mon · Week 3', title: 'Upper A',
+        right: UI.btn('Save', { small: true }) }),
+      UI.header({ onBack: noop, backIcon: 'close', title: 'New collection', sub: 'Collection builder',
+        right: UI.btn('Save', { small: true }) }),
+      UI.header({ onBack: noop, backIcon: 'back', title: 'Ladders',
+        right: UI.pill('Read only', { dot: 'grey' }) })
+    ]));
+
+  // ---- Cards ----
+  section('Cards', 'Radius 28px, no overflow clipping, footer band with matching inner radius.',
+    pad([
+      UI.card({
+        title: 'Details', sub: 'Name, objective and schedule for this cycle.',
+        body: [
+          UI.field('Name', UI.input({ value: 'Cycle 2' })),
+          UI.field('Key objective', UI.input({ placeholder: 'What this cycle is for' }))
+        ]
+      }),
+      UI.card({
+        title: 'Past cycles', sub: 'When they ran and what they got you.', list: true,
+        body: [
+          UI.row({ title: '18 Aug - 28 Sep', sub: 'First strict pull up. Ring dips up to 3x7.', onClick: function () { log('Open past cycle'); } }),
+          UI.row({ title: '1 Oct - 12 Nov', sub: 'None yet', onClick: function () { log('Open past cycle 2'); } })
+        ]
+      }),
+      UI.card({
+        title: 'Current cycle',
+        body: [
+          h('span', { class: 'cycle-name' }, 'Cycle 2'),
+          UI.status('Week 3 of 6', 'accent'),
+          UI.inset([
+            ['Workouts', '2 · 3 sessions a week'],
+            ['Weeks', '6'],
+            ['Start', '29 Sep'],
+            'divider',
+            ['Deload', 'Week 4', 'strong']
+          ])
+        ],
+        foot: [h('span', {}, 'Key objective'), h('span', { class: 'card-foot-value' }, 'Ring dips 3×10 and a first assisted pistol without the band')],
+        footStack: true
+      }),
+      UI.card({
+        body: [h('span', { class: 'muted' }, 'Footer button band, with a full-width tertiary button.')],
+        foot: UI.btn('New workout', { variant: 'tertiary', block: true })
+      }),
+      UI.card({
+        body: [h('span', {}, 'This whole card is one tap target. Tap it.')],
+        onClick: function () { log('Card tapped'); }
+      })
+    ]));
+
+  // ---- Empty states ----
+  section('Empty state', 'Centred. Plus in a grey circle, title, muted line, optional button.',
+    pad([
+      UI.empty({ title: 'No cycle running', text: 'Start a new cycle from Plan. Your last cycle is in Past cycles.',
+        action: { label: 'Go to Plan', onClick: function () { log('Go to Plan'); } } }),
+      UI.empty({ title: 'No cycle running', text: 'A new cycle imports the workouts from your last one.' })
+    ]));
+
+  // ---- Inset ----
+  section('Inset panel', 'Label and value rows with a divider.',
+    pad([
+      UI.card({ body: [UI.inset([['Label', 'Value'], ['Weeks', '6'], 'divider', ['Deload', 'Week 4', 'strong']])] })
+    ]));
+
+  // ---- Rows ----
+  section('Rows', 'Tappable list rows with leading badge, title, sub, and trailing chevron, pill or toggle.',
+    pad([
+      UI.card({
+        title: 'Workouts', list: true,
+        body: [
+          UI.row({ lead: h('span', { class: 'day-badge' }, 'A'), title: 'Upper A', sub: '3 exercises · Mon, Thu',
+            onClick: function () { log('Edit Upper A'); } }),
+          UI.row({ lead: h('span', { class: 'day-badge' }, 'B'), title: 'Lower B', sub: '2 exercises · Wed',
+            onClick: function () { log('Edit Lower B'); } })
+        ]
+      }),
+      UI.card({
+        title: 'Ladders', sub: 'Collections you can link exercises to. Nothing moves automatically.', list: true,
+        body: [
+          UI.row({ title: 'Ring skills', sub: '9 categories · 14 ladders', trail: UI.toggle(true, function () {}, 'Ring skills on') }),
+          UI.row({ title: 'Calisthenics basics', sub: 'No position set · 4 ladders', trail: UI.toggle(false, function () {}, 'Calisthenics basics on') })
+        ]
+      })
+    ]));
+
+  // ---- Buttons ----
+  section('Buttons', 'Dark primary, white outline, and #f0f0f0 tertiary for footer bands. Pill radius throughout.',
+    pad([
+      h('div', { class: 'row-of' },
+        UI.btn('Primary'),
+        UI.btn('Outline', { variant: 'outline' }),
+        UI.btn('Small', { small: true }),
+        UI.btn('With icon', { icon: 'plus' })),
+      h('div', { class: 'row-of' },
+        UI.btn('Disabled'),
+        UI.btn('Disabled outline', { variant: 'outline', disabled: true }),
+        UI.btn('Disabled tertiary', { variant: 'tertiary', disabled: true })),
+      UI.btn('Complete session', { large: true, block: true }),
+      UI.btn('Tertiary, full width', { variant: 'tertiary', block: true }),
+      UI.card({ body: h('div', { class: 'row-of' },
+        UI.iconBtn('back', function () { log('Back'); }, 'Back'),
+        UI.iconBtn('close', function () { log('Close'); }, 'Close'),
+        UI.iconBtn('forward', function () { log('Next week'); }, 'Next week', { outline: true }),
+        UI.iconBtn('back', noop, 'Previous week (disabled)', { outline: true, disabled: true })) })
+    ]));
+
+  // ---- Pills, status, chips ----
+  section('Status, pills and chips', 'Status pill: white, 1px border, 8px coloured dot. Accent is only for "this week" and "you\'re here".',
+    pad([
+      UI.card({ body: [h('div', { class: 'row-of' },
+        UI.status('This week', 'accent'),
+        UI.status('Past week', 'grey'),
+        UI.status('Upcoming', 'light'),
+        UI.status('3 of 3 done', 'dark'),
+        UI.status('Read only')),
+        h('div', { class: 'row-of' },
+        UI.pill('3 sets'),
+        UI.pill('Superset · 3 rounds', { dot: 'dark' }),
+        UI.pill('Done', { dark: true, icon: 'check' }),
+        UI.pill('Deload week', { dashed: true })),
+        h('div', { class: 'row-of' },
+        UI.chip('Goal 3×8'),
+        UI.chip('Linked: Pull Up · Upper A'),
+        UI.rungBadge('Pull Ups 4/9'),
+        UI.rungBadge('BWF · Pull Ups 4/9'),
+        h('span', { class: 'note-pill' }, 'red band'))] })
+    ]));
+
+  // ---- Form fields ----
+  section('Fields', '44px inputs, 16px radius, 15px text. Logger inputs are 17px semibold and centred.',
+    pad([
+      UI.field('Name', UI.input({ value: 'Cycle 2' })),
+      UI.field('Key objective', UI.input({ placeholder: 'What this cycle is for' })),
+      h('div', { class: 'field-row' },
+        UI.field('Weeks', UI.input({ type: 'number', inputmode: 'numeric', value: 6 })),
+        UI.field('Deload week', UI.input({ type: 'number', inputmode: 'numeric', placeholder: 'None' }))),
+      UI.field('Start', UI.input({ type: 'date', value: '2026-09-29' })),
+      UI.field(h('span', {}, 'Key achievements'), UI.textarea({ rows: 4, placeholder: 'e.g. First strict pull up' })),
+      UI.field('Session', h('select', { value: 'upper' },
+        h('option', { value: 'upper' }, 'Upper A'),
+        h('option', { value: 'lower' }, 'Lower B'))),
+      h('div', { class: 'row-of' },
+        h('input', { class: 'logger-input', type: 'number', inputmode: 'numeric', value: '6', 'aria-label': 'Reps, set 1' }),
+        h('input', { class: 'logger-input', type: 'number', inputmode: 'numeric', placeholder: '-', 'aria-label': 'Reps, set 2' }))
+    ]));
+
+  // ---- Toggle and segmented control ----
+  section('Toggle and segmented control', 'Toggle is a real checkbox underneath: 52x32 track, dark when on.',
+    pad([
+      h('div', { class: 'row-of' },
+        UI.toggle(true, function (v) { log('Ring skills ' + (v ? 'on' : 'off')); }, 'Ring skills on'),
+        h('span', { class: 'muted' }, 'on'),
+        UI.toggle(false, function (v) { log('Calisthenics ' + (v ? 'on' : 'off')); }, 'Calisthenics on'),
+        h('span', { class: 'muted' }, 'off')),
+      UI.seg(['Position', 'Goals'], 'Position', function (v) { log('Segment: ' + v); }),
+      UI.seg(['Position', 'Goals'], 'Goals', function (v) { log('Segment: ' + v); })
+    ]));
+
+  // ---- Week screen pieces ----
+  var weekPills = [1, 2, 3, 4, 5, 6].map(function (n) {
+    var cls = 'week-pill';
+    if (n < 3) cls += ' is-done';
+    if (n === 4) cls += ' is-deload';
+    if (n === 3) cls += ' is-selected';
+    var tag = n === 3 ? 'Now' : (n === 4 ? 'Deload' : '');
+    return h('div', { class: 'week-pill-cell' },
+      h('button', { type: 'button', class: cls, 'aria-label': 'Week ' + n, 'aria-current': n === 3 ? 'true' : null,
+        onClick: function () { log('Jump to week ' + n); } }, String(n)),
+      h('div', { class: 'week-pill-tag' }, tag));
+  });
+
+  section('Week', 'Heading, fixed-height tag row, cycle card with week pills, and the session cards.',
+    pad([
+      h('div', { class: 'week-head' },
+        h('div', { class: 'week-head-text' },
+          h('span', { class: 'week-range' }, '29 Sep - 5 Oct'),
+          h('h1', { class: 'week-heading' }, 'Week 3 ', h('span', { class: 'of' }, 'of 6'))),
+        h('div', { class: 'week-nav' },
+          UI.iconBtn('back', function () { log('Previous week'); }, 'Previous week', { outline: true }),
+          UI.iconBtn('forward', function () { log('Next week'); }, 'Next week', { outline: true }))),
+      h('div', { class: 'tag-row' },
+        UI.status('This week', 'accent'),
+        UI.pill('Deload week', { dashed: true }),
+        h('button', { type: 'button', class: 'tag-link', onClick: function () { log('Back to this week'); } }, 'Back to this week')),
+      UI.card({
+        body: [
+          h('div', { class: 'between' }, h('span', { class: 'muted' }, 'Cycle'), h('span', { class: 'muted' }, 'Started 29 Sep')),
+          h('div', { class: 'week-pills' }, weekPills)
+        ],
+        foot: 'Swipe left or right to change week.'
+      }),
+      h('h2', { class: 'g-title', style: { margin: '4px 4px 0' } }, 'Sessions'),
+      h('button', { type: 'button', class: 'session-card', onClick: function () { log('Open Upper A'); } },
+        h('span', { class: 'day-badge' }, 'Mon'),
+        h('span', { class: 'session-main' },
+          h('span', { class: 'session-name' }, 'Upper A'),
+          h('span', { class: 'session-sub' }, '3 exercises')),
+        UI.pill('Done', { dark: true, icon: 'check' })),
+      h('button', { type: 'button', class: 'session-card', onClick: function () { log('Open Lower B'); } },
+        h('span', { class: 'day-badge' }, 'Thu'),
+        h('span', { class: 'session-main' },
+          h('span', { class: 'session-name' }, 'Lower B'),
+          h('span', { class: 'session-sub' }, '2 exercises · deload')),
+        icon('forward', 20)),
+      h('button', { type: 'button', class: 'session-card', disabled: true },
+        h('span', { class: 'day-badge' }, 'Fri'),
+        h('span', { class: 'session-main' },
+          h('span', { class: 'session-name' }, 'Upper B'),
+          h('span', { class: 'session-sub' }, '3 exercises')),
+        h('span', { class: 'session-state' }, 'Not done'))
+    ]));
+
+  // ---- Logger pieces ----
+  function exCol(name, target, note, badge) {
+    return h('div', { class: 'ex-col' },
+      h('span', { class: 'ex-name' }, name),
+      h('span', { class: 'ex-target' }, 'Target ' + target),
+      note ? h('span', { class: 'note-pill' }, note) : null,
+      badge || null);
+  }
+  function setRow(lbl, cells) {
+    return h('div', { class: 'set-row' },
+      h('span', { class: 'set-label' }, lbl),
+      cells.map(function (c) {
+        return h('div', { class: 'set-cell' },
+          h('input', { class: 'logger-input', type: 'number', inputmode: 'numeric', value: c.v == null ? '' : String(c.v), 'aria-label': c.aria }),
+          h('span', { class: 'set-last' }, c.last));
+      }));
+  }
+
+  section('Logger', 'One card per block, exercise headers side by side, set rows with last session under each input.',
+    flush([
+      h('div', { class: 'card-stack', style: { display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px' } },
+        UI.card({
+          body: [
+            h('div', { class: 'between' },
+              h('span', { class: 'card-title', style: { padding: 0 } }, 'Pull + push'),
+              UI.pill('Superset · 3 rounds')),
+            h('div', { class: 'ex-cols' },
+              h('div', { class: 'ex-gutter' }),
+              exCol('Pull Up', '3×6', null, UI.rungBadge('Pull Ups 4/9')),
+              exCol('Ring Dip', '3×8', 'red band', null)),
+            setRow('S1', [{ v: 6, aria: 'Pull Up, set 1', last: 'Last 6' }, { v: null, aria: 'Ring Dip, set 1', last: 'No previous' }]),
+            setRow('S2', [{ v: 6, aria: 'Pull Up, set 2', last: 'Last 6' }, { v: null, aria: 'Ring Dip, set 2', last: 'No previous' }])
+          ]
+        }),
+        UI.card({
+          body: [
+            h('div', { class: 'between' },
+              h('span', { class: 'card-title', style: { padding: 0 } }, 'Core'),
+              UI.pill('3 sets')),
+            h('div', { class: 'ex-cols' },
+              h('div', { class: 'ex-gutter' }),
+              exCol('Hollow Body Hold', '3×30s', null, null)),
+            setRow('S1', [{ v: 30, aria: 'Hollow hold, set 1', last: 'Last 30' }])
+          ]
+        })
+      ),
+      h('div', { class: 'foot-bar' }, UI.btn('Complete session', { large: true, block: true }))
+    ]));
+
+  // ---- Rung picker ----
+  section('Rung picker', 'Workout editor. Shows only collections that are on. Selected option is dark.',
+    pad([
+      UI.field(h('span', {}, 'Rung ', h('span', { class: 'muted' }, '· optional')),
+        h('button', { type: 'button', class: 'picker-btn', 'aria-expanded': 'true' },
+          h('span', { class: 'picker-value' }, 'Pull Ups · BWF 4/9'),
+          icon('updown', 18))),
+      h('div', { class: 'picker-list' },
+        h('button', { type: 'button', class: 'picker-opt' }, 'Not linked'),
+        h('div', { class: 'picker-group' }, 'R/bodyweightfitness Progressions'),
+        h('button', { type: 'button', class: 'picker-opt is-selected' }, 'Pull Up'),
+        h('button', { type: 'button', class: 'picker-opt' }, 'Ring Row'),
+        h('div', { class: 'picker-group' }, 'Ring skills'),
+        h('button', { type: 'button', class: 'picker-opt' }, 'Ring Support'))
+    ]));
+
+  // ---- Ladder ----
+  section('Ladder', 'Position or Goals. The current rung is the dark row with "You\'re here".',
+    pad([
+      UI.seg(['Position', 'Goals'], 'Position', noop),
+      h('p', { class: 'g-note', style: { margin: '0 4px' } }, 'Tap a rung to set your position. Nothing moves on its own.'),
+      h('div', { class: 'rung-list' },
+        h('button', { type: 'button', class: 'rung is-cleared', 'aria-pressed': 'false' },
+          h('span', { class: 'rung-marker' }, icon('check', 14, 2)),
+          h('span', { class: 'rung-main' }, h('span', { class: 'rung-name' }, 'Scapula Pull Up'), h('span', { class: 'rung-chips' }, UI.chip('Goal 3×8')))),
+        h('button', { type: 'button', class: 'rung is-current', 'aria-pressed': 'true' },
+          h('span', { class: 'rung-marker' }, '5'),
+          h('span', { class: 'rung-main' }, h('span', { class: 'rung-name' }, 'Pull Up'), h('span', { class: 'rung-chips' },
+            UI.chip('Goal 3×8'), UI.chip('Linked: Pull Up · Upper A'))),
+          h('span', { class: 'here-pill' }, h('span', { class: 'pill-dot' }), "You're here")),
+        h('button', { type: 'button', class: 'rung', 'aria-pressed': 'false' },
+          h('span', { class: 'rung-marker' }, '6'),
+          h('span', { class: 'rung-main' }, h('span', { class: 'rung-name' }, 'Archer Pull Up'), h('span', { class: 'rung-chips' }, UI.chip('No goal'))))),
+      UI.btn('Clear position', { variant: 'outline', small: true })
+    ]));
+
+  section('Ladder goals', 'Each rung with a goal field. Nothing checks it.',
+    pad([
+      h('div', { class: 'goal-list' },
+        h('div', { class: 'goal-row' },
+          h('span', { class: 'goal-num' }, '1'),
+          h('span', { class: 'goal-name' }, 'Scapula Pull Up'),
+          h('input', { class: 'goal-input', type: 'text', value: '3×8', 'aria-label': 'Goal for Scapula Pull Up' })),
+        h('div', { class: 'goal-row' },
+          h('span', { class: 'goal-num' }, '2'),
+          h('span', { class: 'goal-name' }, 'Pull Up'),
+          h('input', { class: 'goal-input', type: 'text', placeholder: 'e.g. 3×8', 'aria-label': 'Goal for Pull Up' })))
+    ]));
+
+  // ---- Two-step confirm ----
+  section('Two-step confirm', 'First press arms the control and adds Cancel. Second press confirms. Cancel or 5 s disarms. Only one can be armed at a time. No window.confirm.',
+    pad([
+      label('Unarmed'),
+      UI.twoStep('Delete workout', 'Really delete?', function () { log('Workout deleted'); }, { block: true }),
+      label('Armed (held open in this gallery only)'),
+      UI.twoStep('Delete block', 'Really delete?', function () { log('Block deleted'); }, { block: true, armed: true, persist: true })
+    ]));
+
+  // ---- Dock ----
+  section('Dock', 'Floating and centred, 20px from the bottom. The active tab shows its label.',
+    label('Week active'),
+    h('div', { class: 'frame dock-frame' }, UI.dock(
+      [{ id: 'week', label: 'Week', icon: 'week' }, { id: 'plan', label: 'Plan', icon: 'plan' }],
+      'week',
+      function (id) { log('Dock: ' + id); })),
+    label('Plan active'),
+    h('div', { class: 'frame dock-frame' }, UI.dock(
+      [{ id: 'week', label: 'Week', icon: 'week' }, { id: 'plan', label: 'Plan', icon: 'plan' }],
+      'plan',
+      function (id) { log('Dock: ' + id); })));
+
+  // ---- Screen shell ----
+  section('Screen shell', 'Header, full-height scroll column with 16px gutters, cards that never shrink, and 112px clearance above the dock.',
+    h('div', { class: 'frame', style: { height: '560px' } },
+      h('div', { class: 'app', style: { height: '560px', maxWidth: 'none' } },
+        UI.header({ backIcon: 'close', title: 'Plan', sub: 'Demo screen', right: UI.btn('Save', { small: true }) }),
+        h('div', { class: 'screen is-airy has-dock' },
+          UI.card({ title: 'Current cycle', body: [h('span', { class: 'cycle-name' }, 'Cycle 2'), UI.status('Week 3 of 6', 'accent')] }),
+          UI.card({ title: 'Past cycles', list: true, body: [
+            UI.row({ title: '18 Aug - 28 Sep', sub: 'First strict pull up.', onClick: noop }),
+            UI.row({ title: '1 Oct - 12 Nov', sub: 'None yet', onClick: noop }) ] }),
+          UI.card({ title: 'Backup', body: [h('span', { class: 'muted' }, 'Data lives on this phone only.')], foot: UI.btn('Export data', { variant: 'tertiary', block: true }) }),
+          UI.card({ title: 'Ladders', list: true, body: [
+            UI.row({ title: 'Ring skills', sub: '9 categories', trail: UI.toggle(true, noop, 'Ring skills on') }) ] })
+        ),
+        UI.dock(
+          [{ id: 'week', label: 'Week', icon: 'week' }, { id: 'plan', label: 'Plan', icon: 'plan' }],
+          'plan', noop))));
+
+  // ---- Swipe ----
+  var swipeCount = { left: 0, right: 0 };
+  var swipeEl = h('div', { class: 'frame swipe swipe-area' },
+    h('span', { class: 'week-range' }, 'Swipe this box left or right'),
+    h('span', { class: 'row-title', id: 'swipe-count' }, 'Left 0 · Right 0'));
+  section('Swipe', 'Horizontal travel over 50px and more than vertical travel. Swipe left is next week. A swipe does not also fire the click that follows.',
+    swipeEl);
+  UI.onSwipe(swipeEl, {
+    onLeft: function () { swipeCount.left++; swipeEl.querySelector('#swipe-count').textContent = 'Left ' + swipeCount.left + ' · Right ' + swipeCount.right; },
+    onRight: function () { swipeCount.right++; swipeEl.querySelector('#swipe-count').textContent = 'Left ' + swipeCount.left + ' · Right ' + swipeCount.right; }
+  });
+
+  // ---- Icons ----
+  var iconNames = ['back', 'forward', 'chevron', 'close', 'plus', 'check', 'week', 'plan', 'ladder', 'updown', 'link', 'export'];
+  section('Icons', '1.5 stroke, round caps and joins, currentColor. Link and export are drawn in-house.',
+    pad([
+      h('div', { class: 'icon-grid' }, iconNames.map(function (name) {
+        return h('div', { class: 'icon-cell' }, icon(name, 22), h('span', {}, name));
+      }))
+    ]));
+
+})();
+</script>
+</body>
+</html>

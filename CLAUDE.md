@@ -69,79 +69,72 @@ The recovery replaced the prototype's 37 guessed milestones: **31 kept, 27 added
 6 dropped.** Only metadata changed — no rung was renamed, added, removed or
 reordered — so stored progress counts remain valid.
 
-## Layout
+## Layout (v2)
+
+v2 replaced v1's three tabs with the screens in `docs/v2/SPEC.md`. That spec
+was approved by the app's only user on 2026-10-14 and is the reference for
+behaviour and look.
 
 | File | Role |
 |---|---|
-| `index.html` | Static shell. All content is script-rendered into it. |
-| `app.js` | **The source of truth for behaviour.** |
-| `chart.json` | The chart, as data. Read the table above first. |
-| `styles.css` | Verbatim from the prototype. The visual language is deliberate. |
-| `sw.js` | Offline caching. **Bump `CACHE` on every deploy** or phones keep the old shell. |
-| `docs/prototype.html` | The original single-file artifact. Historical reference only — not wired up, do not edit to change behaviour. |
-| `docs/HANDOVER.md` | Why the app is shaped the way it is. Still the best explanation of the design decisions. |
-| `tools/serve.ps1` | Local static server. There is no Node or Python on the dev machine. |
-| `tools/make-icons.ps1` | Regenerates the PWA icons via System.Drawing. |
+| `index.html` | Static shell. Loads `data.js`, `ui.js`, `app.js` with `?v=<version>`. |
+| `data.js` | **All storage and the v1 to v2 migration.** Header comment lists the API. |
+| `ui.js` | DOM helpers and shared components (`UI.h`, cards, pills, two-step, swipe, dock). |
+| `app.js` | Screens, routing and the boot sequence. |
+| `styles.css` | Zinc tokens + Oxanium, per the spec's visual system. |
+| `fonts/` | Self-hosted Oxanium variable font (OFL), so the app works offline. |
+| `chart.json` | The chart, as data. Read the table above first. Becomes the built-in "BWF" collection. |
+| `sw.js` | Offline caching. See **Deploying** below. |
+| `docs/v2/` | The spec, the approved prototype and a component gallery (`components.html`). |
+| `tools/test-migration.js` | Node test for the migration; also audits a real v1 export. |
+| `docs/prototype.html`, `docs/HANDOVER.md` | v1-era history. Useful for the reasoning, stale on the specifics. |
 
-`chart.json` rungs are `["Name", milestone(0|1), "Tier"]`, normalised into
-`{n, ms, tier}` by `initChart()`. Tier is `null` only for Straight Bar Dip, which
-is not on the source chart. Prerequisites are `[Category, Ladder, Move]` triples
-and may cross categories.
+`chart.json` rungs are `["Name", milestone(0|1), "Tier"]`. The built-in
+collection gives every category, ladder and rung a deterministic id derived from
+its names (`bwf:<cat>/<ladder>/<rung>`). **Renaming a rung in chart.json changes its
+id** and breaks links and positions pointing at it.
+
+## Data safety: read before changing storage
+
+The user's whole training history lives only in `localStorage` on one phone.
+
+- v2 state is one blob under `bwl-v2`. v1's `bwf-*` keys are **never written or
+  removed**. A raw copy of them sits in `bwl-v1-backup`.
+- Migration runs once (if `bwl-v2` is absent), checks it lost nothing, and only
+  then writes. If it fails, nothing is written and the app shows an
+  "Export v1 data" screen.
+- Positions are the **last cleared rung** (the user's choice; v1 stored a count N,
+  so N maps to `rungs[N-1]`).
+- Anything v1 had that v2 has no field for is parked under a `v1` property, not
+  dropped.
+- `node tools/test-migration.js [export.json]` must pass before any deploy that
+  touches `data.js`.
+
+## Deploying
+
+The service worker serves the app's own assets **cache-first**. A phone running an
+older worker would otherwise pair a new `index.html` with an old cached `app.js`.
+On every deploy, bump **both** `CACHE` and `V` in `sw.js` **and** the `?v=` on
+every asset in `index.html`, to the same value.
 
 ## Design constraints worth preserving
 
-- Cool grey paper, deep slate ink, and a highlighter yellow used **only** for
-  "your next step". Barlow Semi Condensed throughout.
-- The ladder drawing — two rails, one rung per exercise — is the one piece of
-  visual boldness. Keep it.
-- Progress is stored as a **count** of cleared rungs, not a set of names. Cheap,
-  but inserting a rung mid-ladder silently promotes anyone already past that
-  point. If you edit a ladder's `m` array, you are rewriting history for existing
-  users. Consider switching to named rungs.
-- Nothing is ever blocked. An unmet prerequisite fades a ladder but you can still
-  mark into it, because people skip around.
-- Moving up a rung is always offered, never automatic.
-- Everything is script-rendered, so one early exception blanks the page. Keep the
-  boot message and the try/catch around render.
-
-## Known issues carried over from the prototype
-
-1. Milestone flags are inferred from bold in the source sheet, not transcribed.
-   See the recovery notes above. Tiers are solid.
-2. Progress stored as a count, so mid-ladder insertions shift meaning.
-3. Target parsing is loose — it reads `3×8`, `30s`, and bare numbers. Anything
-   freeform (`AMRAP`, `5-3-1`) logs fine but silently disables the move-up check.
-4. Targets are assigned by **regex on the exercise name**, not curated data. It
-   misclassifies some: explosive and skill work (muscle-ups, handstand balance,
-   planche leans) should not be trained to a flat 3×8, and advanced statics are
-   held far under 30 s at first.
-5. Duplicate exercises are refused across a whole workout, so the same movement
-   cannot appear in two blocks for a two-round structure.
-6. Block names do not resequence when reordered — move C above A and you get
-   C, A, B.
-7. RPE is per exercise, not per set. Deliberate, to keep phone input manageable.
-8. The Log tab's set boxes wrap two-per-line at 375px. Usable but cramped; the
-   table wants a proper narrow-screen treatment.
-9. The Legs branch was incomplete in the first transcription (Nordic curl and
-   split squat / step up were recovered later). Worth a final check against the
-   source that nothing else is missing.
+- The rule: the app never makes a training decision. It never moves a position,
+  never advances a rung and never derives achievements.
+- Zinc greys plus one accent (`#eab308`), used only for "this week" and
+  "you're here". Oxanium throughout.
+- Destructive actions use `UI.twoStep`. Native `confirm()` is banned.
+- Every handler saves before it renders. The logger autosaves on each keystroke.
+- Everything is script-rendered, so each screen render is wrapped in try/catch.
+  Keep the boot message.
 
 ## Testing
 
-There is no test runner and no Node. To exercise it:
-
 ```
-powershell -NoProfile -ExecutionPolicy Bypass -File tools/serve.ps1 -Port 8123
+python3 -m http.server 8124 --bind 127.0.0.1
+node tools/test-migration.js
 ```
 
-then open `http://localhost:8123/`. Service workers and `localStorage` need a
-real HTTP origin — `file://` will not do.
-
-The logic worth protecting is small and pure: `requirements()`, `orderLegs()`,
-`routeTo()`, `parseTarget()`, `gate()`, `target()`. If you change any of them,
-check these known-good values, recomputed from `chart.json` at port time: Muscle
-Up is **8 checkpoints over 2 ladders**; Iron Cross is **50 checkpoints over 10
-ladders and 5 categories**.
-
-(HANDOVER.md §4 says Iron Cross spans 4 categories. It is 5 — it misses Core,
-which enters via Planche's `Core|Plank` prerequisite.)
+Service workers and `localStorage` need a real HTTP origin; `file://` will not do.
+When testing locally, remember the worker is cache-first: bump the version or
+reload twice to see an edit.

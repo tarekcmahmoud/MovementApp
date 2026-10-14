@@ -81,9 +81,11 @@ wipes everything, so download a copy occasionally.
 git add -A && git commit -m "..." && git push
 ```
 
-Pages redeploys on push. **Bump `CACHE` in `sw.js`** whenever you change
-`app.js`, `styles.css`, `chart.json` or `index.html` — otherwise installed phones
-keep serving the cached shell and will not see the update.
+Pages redeploys on push. On every deploy, bump **`CACHE` and `V` in `sw.js`
+and the `?v=` on each asset in `index.html`**, all to the same value. Otherwise
+installed phones keep serving the cached shell, or worse, pair a new page with
+an old cached script. If `data.js` changed, run `node tools/test-migration.js`
+first.
 
 ## Provenance, and what not to trust
 
