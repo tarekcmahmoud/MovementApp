@@ -2,13 +2,13 @@
    All paths are relative so this works unchanged whether the app is served from
    a domain root or from a GitHub Pages subdirectory. Bump CACHE on every deploy
    or returning phones will keep serving the old shell. */
-const CACHE = "bwl-v2-5";
+const CACHE = "bwl-v2-6";
 // index.html loads its scripts and stylesheet with ?v=<this>. A phone still
 // running an OLDER worker serves our own assets cache-first, so on the first
 // launch after a deploy it would pair the new index.html with the old cached
 // app.js. A new query string can never hit an old cache entry. Bump it in
 // index.html together with CACHE.
-const V = "?v=2.5";
+const V = "?v=2.6";
 
 const SHELL = [
   "./",
@@ -20,6 +20,8 @@ const SHELL = [
   "chart.json",
   "fonts/oxanium-latin.woff2",
   "manifest.webmanifest",
+  "icons/icon.svg",
+  "icons/apple-touch-icon.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/maskable-512.png"
