@@ -687,6 +687,7 @@ button.row { cursor: pointer; }
   letter-spacing: -0.01em;
 }
 .week-heading .of { color: var(--muted); font-weight: 500; }
+.week-num, .week-heading .of { display: inline-block; }   /* each one a single box, so it can move on its own */
 .week-nav { flex: none; display: flex; gap: 6px; padding-bottom: 6px; }
 
 /* Fixed-height single line: the content below never moves when tags change. */
@@ -717,6 +718,7 @@ button.row { cursor: pointer; }
   gap: 6px;
 }
 .week-pill-cell {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -741,9 +743,22 @@ button.row { cursor: pointer; }
 .week-pill.is-done { color: var(--muted); text-decoration: line-through; }
 .week-pill.is-deload { background: var(--card); border: 1px dashed var(--idle); }
 .week-pill.is-selected {
-  background: var(--primary);
-  border-color: var(--primary);
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  border-color: transparent;
   color: var(--primary-ink);
+}
+/* The selected week's fill, behind its pill. A week change glides it to the next pill. */
+.week-pill-thumb {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 40px;
+  height: 32px;
+  margin-left: -20px;
+  border-radius: var(--r-pill);
+  background: var(--primary);
 }
 .week-pill-tag {
   height: 12px;
@@ -1168,14 +1183,32 @@ button.row:active, .picker-opt:active, button.rung:active { transform: scale(0.9
 }
 :root[data-motion="back"]::view-transition-new(root) { animation: vt-pop-in var(--t-slow) var(--spline) both; }
 
-:root[data-motion="tab-left"]::view-transition-old(root),
-:root[data-motion="week-prev"]::view-transition-old(root) { animation: vt-out-right var(--t-fast) var(--spline) both; }
-:root[data-motion="tab-left"]::view-transition-new(root),
-:root[data-motion="week-prev"]::view-transition-new(root) { animation: vt-in-left var(--t-slow) var(--spline) both; }
-:root[data-motion="tab-right"]::view-transition-old(root),
-:root[data-motion="week-next"]::view-transition-old(root) { animation: vt-out-left var(--t-fast) var(--spline) both; }
-:root[data-motion="tab-right"]::view-transition-new(root),
-:root[data-motion="week-next"]::view-transition-new(root) { animation: vt-in-right var(--t-slow) var(--spline) both; }
+:root[data-motion="tab-left"]::view-transition-old(root) { animation: vt-out-right var(--t-fast) var(--spline) both; }
+:root[data-motion="tab-left"]::view-transition-new(root) { animation: vt-in-left var(--t-slow) var(--spline) both; }
+:root[data-motion="tab-right"]::view-transition-old(root) { animation: vt-out-left var(--t-fast) var(--spline) both; }
+:root[data-motion="tab-right"]::view-transition-new(root) { animation: vt-in-right var(--t-slow) var(--spline) both; }
+
+/* Week change: the page itself holds still. Only the marked parts (data-vt) move:
+   the number and dates slide in the direction of travel, the selected fill glides
+   to its new pill, and tags or sessions that differ crossfade in place. */
+:root[data-motion^="week-"]::view-transition-old(root),
+:root[data-motion^="week-"]::view-transition-new(root) { animation: none; }
+:root[data-motion^="week-"]::view-transition-group(vt-week-thumb) { animation-duration: var(--t-slow); animation-timing-function: var(--spline-move); }
+@keyframes vt-num-in-up { from { opacity: 0; transform: translateY(40%); } }
+@keyframes vt-num-out-up { to { opacity: 0; transform: translateY(-40%); } }
+@keyframes vt-num-in-down { from { opacity: 0; transform: translateY(-40%); } }
+@keyframes vt-num-out-down { to { opacity: 0; transform: translateY(40%); } }
+:root[data-motion="week-next"]::view-transition-old(vt-week-num),
+:root[data-motion="week-next"]::view-transition-old(vt-week-range) { animation: vt-num-out-up var(--t-fast) var(--spline) both; }
+:root[data-motion="week-next"]::view-transition-new(vt-week-num),
+:root[data-motion="week-next"]::view-transition-new(vt-week-range) { animation: vt-num-in-up var(--t-med) var(--spline) both; }
+:root[data-motion="week-prev"]::view-transition-old(vt-week-num),
+:root[data-motion="week-prev"]::view-transition-old(vt-week-range) { animation: vt-num-out-down var(--t-fast) var(--spline) both; }
+:root[data-motion="week-prev"]::view-transition-new(vt-week-num),
+:root[data-motion="week-prev"]::view-transition-new(vt-week-range) { animation: vt-num-in-down var(--t-med) var(--spline) both; }
+/* Text whose width changes ("Week 9" to "Week 10") resizes rather than stretches. */
+::view-transition-old(vt-week-num), ::view-transition-new(vt-week-num),
+::view-transition-old(vt-week-range), ::view-transition-new(vt-week-range) { height: 100%; width: auto; object-fit: none; object-position: left center; }
 
 :root[data-motion="fade"]::view-transition-old(root) { animation: vt-fade-out var(--t-fast) var(--spline) both; }
 :root[data-motion="fade"]::view-transition-new(root) { animation: vt-fade-in var(--t-med) var(--spline) both; }

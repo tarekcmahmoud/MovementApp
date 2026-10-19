@@ -341,11 +341,17 @@
     });
     var hdr = scope.querySelector('.hdr');
     if (hdr) set(hdr, kind === 'same' ? 'hdr' : '');
+    // A week change moves only what differs: parts marked data-vt keep their identity
+    // across the render, everything else is identical and stays perfectly still.
+    var week = kind === 'week-next' || kind === 'week-prev';
+    Array.prototype.forEach.call(scope.querySelectorAll('[data-vt]'), function (el) {
+      set(el, week ? 'vt-' + el.dataset.vt : '');
+    });
     var sc = scope.querySelector('.screen');
     if (!sc) return;
     var vh = window.innerHeight, seen = {};
     Array.prototype.forEach.call(sc.children, function (el) {
-      if (kind !== 'same') { set(el, ''); return; }   // the whole page moves as one
+      if (kind !== 'same') { set(el, ''); return; }   // the page moves as one, or only its marked parts
       var r = el.getBoundingClientRect();
       if (r.bottom < 0 || r.top > vh || !r.height) { set(el, ''); return; }
       var title = el.querySelector('.card-title, .row-title, .cycle-name, .week-heading');
@@ -409,6 +415,9 @@
      Week and Past-cycle
      ==================================================================== */
 
+  // Marks a part that should keep its identity across a week change (see nameParts).
+  function markVt(el, key) { el.dataset.vt = key; return el; }
+
   function weekPills(cycle, route, live, current, selected, total) {
     var cells = [];
     for (var k = 1; k <= total; k++) (function (k) {
@@ -418,8 +427,10 @@
       if (k === selected) cls += ' is-selected';
       var tag = live && k === current ? 'Now' : (cycle.deload.indexOf(k) >= 0 ? 'Deload' : '');
       cells.push(h('div', { class: 'week-pill-cell' },
+        // The selected week's dark fill is its own element, so on a week change it glides across.
+        k === selected ? h('span', { class: 'week-pill-thumb', 'aria-hidden': 'true', dataset: { vt: 'week-thumb' } }) : null,
         h('button', {
-          type: 'button', class: cls,
+          type: 'button', class: cls, dataset: { vt: 'week-pill-' + k },
           'aria-label': 'Week ' + k + ((live ? k < current : true) ? ', completed' : ''),
           'aria-current': k === selected ? 'true' : null,
           onClick: function () { route.week = k; render(); }
@@ -444,7 +455,7 @@
     else trail = UI.icon('forward', 20);
     var openable = live && (workout || session);
     return h('button', {
-      type: 'button', class: 'session-card', disabled: !openable,
+      type: 'button', class: 'session-card', disabled: !openable, dataset: { vt: 'week-session-' + hashKey(String(slot.id)) },
       onClick: function () {
         route.week = n;
         push({ name: 'logger', cycleId: cycle.id, week: n, slotId: slot.id });
@@ -498,17 +509,21 @@
 
     var head = h('div', { class: 'week-head' },
       h('div', { class: 'week-head-text' },
-        h('span', { class: 'week-range' }, weekRangeText(cycle, n)),
-        h('h1', { class: 'week-heading' }, 'Week ' + n + ' ', h('span', { class: 'of' }, 'of ' + total))),
+        h('span', { class: 'week-range', dataset: { vt: 'week-range' } }, weekRangeText(cycle, n)),
+        h('h1', { class: 'week-heading' }, 'Week ',
+          h('span', { class: 'week-num', dataset: { vt: 'week-num' } }, String(n)), ' ',
+          h('span', { class: 'of', dataset: { vt: 'week-of' } }, 'of ' + total))),
       h('div', { class: 'week-nav' },
         UI.iconBtn('back', function () { setWeek(n - 1); }, 'Previous week', { outline: true, disabled: n <= 1 }),
         UI.iconBtn('forward', function () { setWeek(n + 1); }, 'Next week', { outline: true, disabled: n >= total })));
+    head.querySelectorAll('.week-nav .icon-btn').forEach(function (b, i) { markVt(b, i ? 'week-next-btn' : 'week-prev-btn'); });
+    markVt(statusEl, 'week-status');
 
     var tags = h('div', { class: 'tag-row' },
       statusEl,
-      isDeload ? UI.pill('Deload week', { dashed: true }) : null,
+      isDeload ? markVt(UI.pill('Deload week', { dashed: true }), 'week-deload') : null,
       live && n !== current
-        ? h('button', { type: 'button', class: 'tag-link', onClick: function () { setWeek(current); } }, 'Back to this week')
+        ? h('button', { type: 'button', class: 'tag-link', dataset: { vt: 'week-back' }, onClick: function () { setWeek(current); } }, 'Back to this week')
         : null);
 
     var cycleCard = UI.card({
