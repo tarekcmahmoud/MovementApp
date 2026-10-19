@@ -1183,10 +1183,17 @@ button.row:active, .picker-opt:active, button.rung:active { transform: scale(0.9
 }
 :root[data-motion="back"]::view-transition-new(root) { animation: vt-pop-in var(--t-slow) var(--spline) both; }
 
-:root[data-motion="tab-left"]::view-transition-old(root) { animation: vt-out-right var(--t-fast) var(--spline) both; }
-:root[data-motion="tab-left"]::view-transition-new(root) { animation: vt-in-left var(--t-slow) var(--spline) both; }
-:root[data-motion="tab-right"]::view-transition-old(root) { animation: vt-out-left var(--t-fast) var(--spline) both; }
-:root[data-motion="tab-right"]::view-transition-new(root) { animation: vt-in-right var(--t-slow) var(--spline) both; }
+/* Tabs sit side by side: Plan is to the right of Week. Switching slides the whole
+   interface across, the old screen out one side as the new one comes in the other.
+   The dock is named, so it holds still while only its tabs morph. */
+@keyframes vt-tab-in-right { from { transform: translateX(100%); } }
+@keyframes vt-tab-out-left { to { transform: translateX(-100%); } }
+@keyframes vt-tab-in-left { from { transform: translateX(-100%); } }
+@keyframes vt-tab-out-right { to { transform: translateX(100%); } }
+:root[data-motion="tab-right"]::view-transition-old(root) { animation: vt-tab-out-left var(--t-slow) var(--spline-move) both; }
+:root[data-motion="tab-right"]::view-transition-new(root) { animation: vt-tab-in-right var(--t-slow) var(--spline-move) both; }
+:root[data-motion="tab-left"]::view-transition-old(root) { animation: vt-tab-out-right var(--t-slow) var(--spline-move) both; }
+:root[data-motion="tab-left"]::view-transition-new(root) { animation: vt-tab-in-left var(--t-slow) var(--spline-move) both; }
 
 /* Week change: the page itself holds still. Only the marked parts (data-vt) move:
    the number and dates slide in the direction of travel, the selected fill glides
