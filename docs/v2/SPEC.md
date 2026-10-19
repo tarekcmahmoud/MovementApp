@@ -105,13 +105,13 @@ Zinc palette, Oxanium for everything, icons in Hugeicons' style (1.5 stroke, rou
 
 | Token | Value |
 |---|---|
-| Page background | `#f4f4f4` |
+| Page background | `#f3f3f4` with a sparse grain (dark: `#09090b`). Light and dark themes since 2026-10-19 |
 | Card | `#ffffff`, 1px `#e4e4e7` border, radius 28px |
 | Card footer band | `#fafafa`, top border `#e4e4e7`, bottom radius 27px |
 | Inset panel | `#f4f4f5`, radius 20px, label/value rows |
 | Text / muted / soft | `#09090b` / `#71717a` / `#3f3f46` |
 | Primary | `#18181b` on `#fafafa` |
-| Accent dot | `#eab308` (this week, you're here) — the only colour |
+| Accent dot | cherry red `#d2042d` (dark `#ef2b4f`): this week, you're here — the only colour. Was `#eab308` until 2026-10-19 |
 | Inputs | 44px tall, radius 16px, 15px text; logger inputs 17px semibold |
 | Buttons | pills (radius 999): dark primary, white outline secondary, `#f0f0f0` full-width tertiary in footer bands |
 | Round icon button | 40px, `#f4f4f5`, radius 999 (back, close) |

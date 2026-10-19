@@ -41,6 +41,9 @@
   };
   PATHS.chevron = PATHS.forward;
 
+  // How long a control's own motion runs before its change is applied (matches --t-med).
+  var SETTLE = 260;
+
   // ---------- Hyperscript ----------
 
   function isNode(x) {
@@ -342,7 +345,11 @@
       role: 'switch',
       'aria-label': label,
       checked: !!checked,
-      onChange: function (e) { if (onChange) onChange(e.target.checked, e); }
+      // The knob slides first (CSS), then the change lands, so a re-render never cuts the motion short.
+      onChange: function (e) {
+        var c = e.target.checked;
+        if (onChange) setTimeout(function () { onChange(c, e); }, SETTLE);
+      }
     });
     return h('label', { class: 'toggle' },
       box,
@@ -355,16 +362,31 @@
     var list = (options || []).map(function (o) {
       return (o && typeof o === 'object') ? o : { value: o, label: String(o) };
     });
-    return h('div', { class: 'seg', role: 'tablist' }, list.map(function (o) {
+    var at = 0;
+    list.forEach(function (o, i) { if (o.value === value) at = i; });
+    // One thumb slides between the options; the callback waits until it has arrived.
+    var thumb = h('span', { class: 'seg-thumb', 'aria-hidden': 'true', style: { '--i': at, '--n': list.length } });
+    var wrap = h('div', { class: 'seg has-thumb', role: 'tablist' }, thumb, list.map(function (o, i) {
       var on = o.value === value;
       return h('button', {
         type: 'button',
         role: 'tab',
         class: 'seg-opt' + (on ? ' is-selected' : ''),
         'aria-selected': on,
-        onClick: function () { if (!on && onChange) onChange(o.value); }
+        onClick: function (e) {
+          if (on || !onChange) return;
+          on = true;
+          thumb.style.setProperty('--i', i);
+          Array.prototype.forEach.call(wrap.querySelectorAll('.seg-opt'), function (b) {
+            var me = b === e.currentTarget;
+            b.classList.toggle('is-selected', me);
+            b.setAttribute('aria-selected', String(me));
+          });
+          setTimeout(function () { onChange(o.value); }, SETTLE);
+        }
       }, o.label);
     }));
+    return wrap;
   }
 
   // ---------- Header and dock ----------
@@ -413,8 +435,9 @@
     var state = { wrap: wrap, disarm: disarm };
     var size = { small: !!opts.small, block: !!opts.block };
 
-    function draw(isArmed) {
+    function draw(isArmed, fresh) {
       wrap.textContent = '';
+      wrap.classList.toggle('is-fresh', !!fresh);   // animate only a change, not the first draw
       if (!isArmed) {
         wrap.appendChild(btn(label, { variant: 'outline', small: size.small, block: size.block, onClick: arm }));
       } else {
@@ -426,7 +449,7 @@
     function arm() {
       if (armed && armed !== state) armed.disarm();
       armed = state;
-      draw(true);
+      draw(true, true);
       clearTimeout(timer);
       timer = opts.persist ? null : setTimeout(disarm, 5000);
     }
@@ -435,7 +458,7 @@
       clearTimeout(timer);
       timer = null;
       if (armed === state) armed = null;
-      draw(false);
+      draw(false, true);
     }
 
     function confirm() {

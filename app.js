@@ -24,7 +24,8 @@
   var DAY_LABEL = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' };
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   var TABS = [{ id: 'week', label: 'Week', icon: 'week' }, { id: 'plan', label: 'Plan', icon: 'plan' }];
-  var UI_KEY = 'bwl-v2-ui';   // the only key this file writes itself: which drift notice was dismissed
+  var UI_KEY = 'bwl-v2-ui';   // which drift notice was dismissed
+  var THEME_KEY = 'bwl-appearance';   // 'light' | 'dark'; absent means Auto. Read before paint in index.html.
 
   var chart = null;
   var storage = null;
@@ -32,6 +33,8 @@
   var stack = [{ name: 'week' }];
   var lastRendered = null;
   var appEl = null;
+  var motion = '';      // set by switchTab: 'tab-left' | 'tab-right'. Otherwise render() infers it.
+  var lastDepth = 0, motionToken = 0;
 
   // Transient, in-memory screen state that is not part of any route.
   var ui = { newCycleHint: false, importDraft: null, importNote: '', importError: '', drift: null };
@@ -149,7 +152,9 @@
   }
   function clearError(kind) {
     if (!toastEl || (kind && kind !== toastKind)) return;
-    toastEl.remove();
+    var el = toastEl;
+    el.classList.add('is-leaving');   // slides out, then goes
+    setTimeout(function () { el.remove(); }, 260);
     toastEl = null; toastKind = null;
   }
 
@@ -218,6 +223,8 @@
   }
   function switchTab(id) {
     if (stack.length === 1 && stack[0].name === id) return;
+    var ids = TABS.map(function (t) { return t.id; });
+    motion = ids.indexOf(id) === 0 ? 'tab-left' : 'tab-right';   // from the side of its dock tab
     goRoot(id);
   }
 
@@ -298,7 +305,80 @@
     });
   }
 
+  /* ---- Motion: every render is animated. The View Transitions API morphs the old
+     page into the new one; the curves and durations are tokens in styles.css. ---- */
+
+  function reducedMotion() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+  // What kind of change this render is, read from the stack and the route.
+  function motionFor(route) {
+    if (motion) return motion;
+    if (route === lastRendered) {
+      var was = route.shownWeek;   // set by weekScreen to the week it drew
+      if (route.week && was && route.week !== was) return route.week > was ? 'week-next' : 'week-prev';
+      return 'same';
+    }
+    if (stack.length > lastDepth) return 'forward';
+    if (stack.length < lastDepth) return 'back';
+    return 'fade';
+  }
+  function hashKey(s) {
+    var x = 5381;
+    for (var i = 0; i < s.length; i++) x = ((x * 33) ^ s.charCodeAt(i)) >>> 0;
+    return x.toString(36);
+  }
+  // Names the parts that should morph rather than crossfade. In place, each visible
+  // block of the screen keeps its identity, so it glides to its new size and place.
+  function nameParts(scope, kind) {
+    if (!scope) return;
+    function set(el, n) { el.style.viewTransitionName = n || ''; }
+    var slide = kind === 'forward' || kind === 'back';
+    var dock = scope.querySelector('.dock');
+    if (dock) set(dock, slide ? '' : 'dock');
+    Array.prototype.forEach.call(scope.querySelectorAll('.dock-tab'), function (t, i) {
+      set(t, slide ? '' : 'dock-tab-' + i);
+    });
+    var hdr = scope.querySelector('.hdr');
+    if (hdr) set(hdr, kind === 'same' ? 'hdr' : '');
+    var sc = scope.querySelector('.screen');
+    if (!sc) return;
+    var vh = window.innerHeight, seen = {};
+    Array.prototype.forEach.call(sc.children, function (el) {
+      if (kind !== 'same') { set(el, ''); return; }   // the whole page moves as one
+      var r = el.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > vh || !r.height) { set(el, ''); return; }
+      var title = el.querySelector('.card-title, .row-title, .cycle-name, .week-heading');
+      var key = (el.className || el.tagName) + '|' + (title ? title.textContent : '');
+      seen[key] = (seen[key] || 0) + 1;
+      set(el, 'p-' + hashKey(key + '|' + seen[key]));
+    });
+  }
+
   function render() {
+    var route = top();
+    var kind = motionFor(route);
+    motion = '';
+    // A render that focuses a field stays inside the tap, or iOS won't raise the keyboard.
+    var animate = booted && !reducedMotion() && route.afterRender !== focusMarked;
+    if (!animate || !document.startViewTransition) {
+      paint(animate ? kind : '');
+      return;
+    }
+    var root = document.documentElement;
+    var token = ++motionToken;
+    nameParts(appEl, kind);
+    root.setAttribute('data-motion', kind);
+    var t = document.startViewTransition(function () { paint('', kind); });
+    var done = function () { if (token === motionToken) root.removeAttribute('data-motion'); };
+    t.finished.then(done, done);
+    // A quick second tap, or a hidden page, skips a transition. The page still updates.
+    t.ready.catch(function () {});
+    t.updateCallbackDone.catch(function (e) { console.error(e); });
+  }
+
+  // fallbackKind: no View Transitions here, so the new screen eases in with CSS instead.
+  function paint(fallbackKind, vtKind) {
     var route = top();
     var old = appEl.querySelector('.screen');
     var keep = lastRendered === route && old ? old.scrollTop : (route.scroll || 0);
@@ -308,7 +388,11 @@
     appEl.replaceChildren(node);
     var sc = appEl.querySelector('.screen');
     if (sc) sc.scrollTop = keep;
+    var enter = { 'tab-left': 'left', back: 'left', 'week-prev': 'left', 'tab-right': 'right', forward: 'right', 'week-next': 'right' }[fallbackKind];
+    if (sc && enter) sc.classList.add('enter-' + enter);
+    if (vtKind) nameParts(appEl, vtKind);
     lastRendered = route;
+    lastDepth = stack.length;
     if (!failed && !booted) {
       booted = true;
       var boot = document.getElementById('boot');
@@ -392,6 +476,7 @@
     var total = Math.max(1, Math.floor(+cycle.weeks) || 1);
     var current = Data.currentWeek(cycle);
     var n = Math.min(Math.max(route.week || (live ? current : 1), 1), total);
+    route.shownWeek = n;
     var isDeload = cycle.deload.indexOf(n) >= 0;
 
     function setWeek(k) { route.week = Math.min(Math.max(k, 1), total); render(); }
@@ -852,6 +937,36 @@
     return UI.card({ title: 'The old version saved data after the upgrade', body: body, foot: foot });
   }
 
+  /* ---- Appearance: Auto follows the system, Light and Dark pin it ---- */
+
+  function appearance() {
+    try { var t = storage.getItem(THEME_KEY); return t === 'light' || t === 'dark' ? t : 'auto'; }
+    catch (e) { return 'auto'; }
+  }
+  function applyAppearance(t) {
+    var root = document.documentElement;
+    if (t === 'light' || t === 'dark') root.setAttribute('data-theme', t);
+    else root.removeAttribute('data-theme');
+    var meta = document.querySelector('meta[name="theme-color"]');
+    var bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+    if (meta && bg) meta.setAttribute('content', bg);
+  }
+  function appearanceCard() {
+    return UI.card({
+      title: 'Appearance',
+      body: UI.seg([
+        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+      ], appearance(), function (v) {
+        try {
+          if (v === 'auto') storage.removeItem(THEME_KEY);
+          else storage.setItem(THEME_KEY, v);
+        } catch (e) { /* the choice still applies until reload */ }
+        applyAppearance(v);
+        render();
+      })
+    });
+  }
+
   function planScreen() {
     var cycle = Data.activeCycle();
     var ended = Data.endedCycles();
@@ -924,6 +1039,7 @@
       ]
     }));
 
+    body.push(appearanceCard());
     body.push(importCard());
 
     return shell({ cls: 'is-airy has-dock', dock: 'plan', body: body });
@@ -1718,6 +1834,13 @@
     } catch (e) {
       fatal(new Error('This browser is blocking storage, so the app cannot read or save your data.'));
       return;
+    }
+    applyAppearance(appearance());
+    if (window.matchMedia) {
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      var follow = function () { applyAppearance(appearance()); };
+      if (mq.addEventListener) mq.addEventListener('change', follow);
+      else if (mq.addListener) mq.addListener(follow);
     }
 
     fetch('chart.json')

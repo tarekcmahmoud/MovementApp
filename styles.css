@@ -1,7 +1,9 @@
 /*
  * Bodyweight Ladders v2 - visual system.
  * Tokens on :root, then shared components. Values follow docs/v2/prototype.html
- * and the "Visual system" section of docs/v2/SPEC.md. No external requests.
+ * and the "Visual system" section of docs/v2/SPEC.md, restyled in the Capsule
+ * language: cherry red accent, a sparse grain on the ground, and a dark theme.
+ * No external requests.
  */
 
 @font-face {
@@ -15,7 +17,8 @@
 /* ---------- Tokens ---------- */
 
 :root {
-  --bg: #f4f4f4;               /* page background */
+  color-scheme: light;
+  --bg: #f3f3f4;               /* page background: a very light grey ground; cards stay white */
   --card: #ffffff;
   --card-border: #e4e4e7;
   --foot: #fafafa;             /* card footer band */
@@ -27,7 +30,11 @@
   --idle: #a1a1aa;             /* idle dot, dashed borders, placeholders */
   --primary: #18181b;          /* dark pill */
   --primary-ink: #fafafa;
-  --accent: #eab308;           /* the only colour: "this week", "you're here" */
+  --accent: #d2042d;           /* cherry red, the only colour: "this week", "you're here" */
+  --accent-deep: #6b0a1a;      /* dark red: the far end of any accent gradient */
+  --faint: #b4b4bb;            /* quieter than --idle: counts, hints */
+  --knob: #ffffff;             /* toggle knob */
+  --card-shadow: 0 1px 2px rgba(9, 9, 11, 0.04);
   --toggle-off: #d4d4d8;
   --tertiary: #f0f0f0;         /* full-width tertiary buttons in footer bands */
   --seg: #e9e9eb;              /* segmented control track */
@@ -35,7 +42,19 @@
   --disabled-ink: #71717a;
   --dock-active: rgba(9, 9, 11, 0.08);
   --shadow-dock: 0 8px 24px rgba(9, 9, 11, 0.10), 0 1px 2px rgba(9, 9, 11, 0.06);
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Super-subtle, sparse grain on the page ground only. Cards and the dock stay smooth. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.2 0 0 0 -0.76'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");
+  /* Motion. Every animation runs on one of these cubic Bezier splines, never a
+     linear or keyword timing. --spline decelerates (things arriving), --spline-move
+     accelerates then settles (things travelling), --spline-spring overshoots
+     slightly (a press releasing). */
+  --spline: cubic-bezier(0.16, 1, 0.3, 1);
+  --spline-move: cubic-bezier(0.65, 0, 0.35, 1);
+  --spline-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: var(--spline);
+  --t-fast: 0.2s;              /* fades, colour */
+  --t-med: 0.34s;              /* controls, in-place morphs */
+  --t-slow: 0.46s;             /* pages */
 
   --r-card: 28px;
   --r-foot: 27px;
@@ -46,6 +65,33 @@
   --font: 'Oxanium', system-ui, sans-serif;
 }
 
+/* Dark: the same zinc scale inverted. Auto follows the system; Plan > Appearance can
+   pin either theme through data-theme on <html> (set before paint in index.html). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #09090b; --card: #18181b; --card-border: #27272a; --foot: #141417; --inset: #232327;
+    --text: #fafafa; --muted: #a1a1aa; --soft: #d4d4d8; --ink-2: #a1a1aa; --idle: #71717a; --faint: #46464d;
+    --primary: #fafafa; --primary-ink: #18181b; --accent: #ef2b4f; --accent-deep: #8a1528;
+    --toggle-off: #3f3f46; --knob: #fafafa; --tertiary: #27272a; --seg: #1f1f23;
+    --disabled-bg: #27272a; --disabled-ink: #71717a; --dock-active: rgba(250, 250, 250, 0.10);
+    --shadow-dock: 0 8px 24px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4);
+    --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.42  0 0 0 0 0.42  1.2 0 0 0 -0.74'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #09090b; --card: #18181b; --card-border: #27272a; --foot: #141417; --inset: #232327;
+  --text: #fafafa; --muted: #a1a1aa; --soft: #d4d4d8; --ink-2: #a1a1aa; --idle: #71717a; --faint: #46464d;
+  --primary: #fafafa; --primary-ink: #18181b; --accent: #ef2b4f; --accent-deep: #8a1528;
+  --toggle-off: #3f3f46; --knob: #fafafa; --tertiary: #27272a; --seg: #1f1f23;
+  --disabled-bg: #27272a; --disabled-ink: #71717a; --dock-active: rgba(250, 250, 250, 0.10);
+  --shadow-dock: 0 8px 24px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4);
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.42  0 0 0 0 0.42  1.2 0 0 0 -0.74'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");
+}
+
 /* ---------- Base ---------- */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -54,7 +100,10 @@ html, body { height: 100%; }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: var(--grain);
+  background-size: 180px 180px;
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
   font-size: 15px;
@@ -146,7 +195,7 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; marg
   height: 100dvh;
   margin: 0 auto;
   overflow: hidden;
-  background: var(--bg);
+  background: transparent;   /* let the grain on body show through */
 }
 
 /* Full-height scroll column. Children never shrink, so cards never squash or clip. */
@@ -227,11 +276,14 @@ input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; marg
   border-radius: var(--r-pill);
   background: var(--inset);
   color: var(--text);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s var(--ease-out), opacity 0.2s var(--ease-out);
 }
+.icon-btn:active:not(:disabled) { transform: scale(0.92); transition-duration: 0.1s, 0.2s, 0.2s; }
+/* Round outline button: transparent, so it sits on the grain (or the card) without a fill. */
 .icon-btn--outline {
   width: 44px;
   height: 44px;
-  background: var(--card);
+  background: transparent;
   border: 1px solid var(--card-border);
 }
 .icon-btn:disabled { opacity: 0.35; cursor: default; }
@@ -393,9 +445,10 @@ button.row { cursor: pointer; }
   font-weight: 500;
   line-height: 1;
   white-space: nowrap;
-  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.15s var(--ease-out);
+  transition: background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.btn:active:not(:disabled) { transform: scale(0.98); }
+/* A quick press and a springy release. */
+.btn:active:not(:disabled) { transform: scale(0.96); transition-duration: 0.2s, 0.2s, 0.2s, 0.1s; }
 .btn .icon { flex: none; }
 
 .btn-primary { background: var(--primary); color: var(--primary-ink); }
@@ -579,13 +632,13 @@ button.row { cursor: pointer; }
   width: 24px;
   height: 24px;
   border-radius: var(--r-pill);
-  background: #ffffff;
+  background: var(--knob);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
   transition: transform 0.25s var(--ease-out);
   pointer-events: none;
 }
 .toggle input:checked ~ .toggle-track { background: var(--primary); }
-.toggle input:checked ~ .toggle-knob { transform: translateX(20px); }
+.toggle input:checked ~ .toggle-knob { transform: translateX(20px); background: var(--primary-ink); }
 .toggle input:focus-visible ~ .toggle-track { outline: 2px solid var(--primary); outline-offset: 2px; }
 
 /* ---------- Segmented control ---------- */
@@ -613,7 +666,7 @@ button.row { cursor: pointer; }
 .seg-opt.is-selected {
   background: var(--card);
   color: var(--text);
-  box-shadow: 0 1px 2px rgba(9, 9, 11, 0.08);
+  box-shadow: var(--card-shadow);
 }
 
 /* ---------- Week screen ---------- */
@@ -879,7 +932,7 @@ button.row { cursor: pointer; }
 }
 .rung.is-cleared { color: var(--ink-2); }
 .rung.is-current { background: var(--primary); color: var(--primary-ink); }
-.rung.is-current .chip { background: rgba(255, 255, 255, 0.14); color: var(--primary-ink); }
+.rung.is-current .chip { background: rgba(255, 255, 255, 0.14); background: color-mix(in srgb, var(--primary-ink) 14%, transparent); color: var(--primary-ink); }
 .rung-marker {
   width: 30px;
   height: 30px;
@@ -1012,6 +1065,121 @@ button.row { cursor: pointer; }
 
 /* ---------- Motion ---------- */
 
+/* Press and release. Every tappable thing shrinks a touch on press and springs back. */
+.card-tap, button.row, .session-card, .picker-btn, .picker-opt, button.rung, .week-pill,
+.day-chip, .seg-opt, .tag-link, button.chip, button.pill, .toggle {
+  transition:
+    transform 0.45s var(--spline-spring),
+    background-color var(--t-med) var(--spline),
+    color var(--t-med) var(--spline),
+    border-color var(--t-med) var(--spline),
+    box-shadow var(--t-med) var(--spline),
+    opacity var(--t-fast) var(--spline);
+}
+.card-tap:active, .session-card:active:not(:disabled) { transform: scale(0.985); transition-duration: 0.12s; }
+button.row:active, .picker-opt:active, button.rung:active { transform: scale(0.98); transition-duration: 0.12s; }
+.picker-btn:active, .week-pill:active, .day-chip:active, .seg-opt:active,
+.tag-link:active, button.chip:active, button.pill:active { transform: scale(0.94); transition-duration: 0.12s; }
+.dock-tab:active { transform: scale(0.94); }
+
+/* Toggle: the knob travels on the move curve, and stretches a little on press. */
+.toggle-track { transition: background-color var(--t-med) var(--spline); }
+.toggle-knob { transition: transform var(--t-med) var(--spline-move), width 0.2s var(--spline), background-color var(--t-med) var(--spline); }
+.toggle:active .toggle-knob { width: 28px; }
+.toggle:active input:checked ~ .toggle-knob { transform: translateX(16px); }
+
+/* Segmented control: one thumb slides between options. */
+.seg.has-thumb { position: relative; }
+.seg-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc((100% - 8px - (var(--n) - 1) * 4px) / var(--n));
+  border-radius: var(--r-pill);
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+  transform: translateX(calc(var(--i) * (100% + 4px)));
+  transition: transform var(--t-med) var(--spline-move);
+  pointer-events: none;
+}
+.seg.has-thumb .seg-opt { position: relative; z-index: 1; }
+.seg.has-thumb .seg-opt.is-selected { background: transparent; box-shadow: none; }
+
+/* Two-step: the confirm and Cancel rise in when it arms, the first button when it disarms. */
+@keyframes rise-in { from { opacity: 0; transform: translateY(6px) scale(0.96); } to { opacity: 1; transform: none; } }
+.two-step.is-fresh > .btn { animation: rise-in var(--t-med) var(--spline) backwards; }
+.two-step.is-fresh > .btn + .btn { animation-delay: 40ms; }
+
+/* Toast slides down in and back up out. */
+@keyframes toast-in { from { opacity: 0; transform: translateY(-12px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(-12px) scale(0.98); } }
+.toast { animation: toast-in var(--t-med) var(--spline) backwards; }
+.toast.is-leaving { animation: toast-out 0.24s var(--spline-move) forwards; pointer-events: none; }
+
+/* Fallback when the View Transitions API is missing: the new screen eases in. */
+
+/* Tab change: the incoming screen eases in from the side of its dock tab. */
+@keyframes from-left { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@keyframes from-right { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.screen.enter-left { animation: from-left var(--t-slow) var(--spline); }
+.screen.enter-right { animation: from-right var(--t-slow) var(--spline); }
+.dock-tab {
+  transition: background-color var(--t-med) var(--spline), padding 0.4s var(--spline), color var(--t-med) var(--spline),
+              transform 0.45s var(--spline-spring);
+}
+
+/* ---------- Page transitions (View Transitions API, driven by render() in app.js) ----------
+   :root[data-motion] names the kind of change: forward / back (drill in and out),
+   tab-left / tab-right (dock), week-next / week-prev, same (in place), fade. */
+
+::view-transition { pointer-events: none; }   /* taps reach the new page straight away */
+::view-transition-group(*) { animation-duration: var(--t-med); animation-timing-function: var(--spline); }
+::view-transition-old(*),
+::view-transition-new(*) { animation-duration: var(--t-fast); animation-timing-function: var(--spline); }
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: var(--t-med); }
+/* The header and the dock stay above content gliding beneath them. */
+::view-transition-group(hdr),
+::view-transition-group(dock),
+::view-transition-group(dock-tab-0),
+::view-transition-group(dock-tab-1) { z-index: 10; }
+
+@keyframes vt-push-in { from { transform: translateX(100%); } }
+@keyframes vt-push-out { to { transform: translateX(-24%); opacity: 0.5; } }
+@keyframes vt-pop-in { from { transform: translateX(-24%); opacity: 0.5; } }
+@keyframes vt-pop-out { to { transform: translateX(100%); } }
+@keyframes vt-in-left { from { opacity: 0; transform: translateX(-18px); } }
+@keyframes vt-in-right { from { opacity: 0; transform: translateX(18px); } }
+@keyframes vt-out-left { to { opacity: 0; transform: translateX(-18px); } }
+@keyframes vt-out-right { to { opacity: 0; transform: translateX(18px); } }
+@keyframes vt-fade-in { from { opacity: 0; } }
+@keyframes vt-fade-out { to { opacity: 0; } }
+
+:root[data-motion="forward"]::view-transition-old(root) { animation: vt-push-out var(--t-slow) var(--spline) both; }
+:root[data-motion="forward"]::view-transition-new(root) {
+  animation: vt-push-in var(--t-slow) var(--spline) both;
+  box-shadow: -12px 0 32px rgba(9, 9, 11, 0.10);
+}
+:root[data-motion="back"]::view-transition-old(root) {
+  animation: vt-pop-out var(--t-slow) var(--spline) both;
+  z-index: 1;
+  box-shadow: -12px 0 32px rgba(9, 9, 11, 0.10);
+}
+:root[data-motion="back"]::view-transition-new(root) { animation: vt-pop-in var(--t-slow) var(--spline) both; }
+
+:root[data-motion="tab-left"]::view-transition-old(root),
+:root[data-motion="week-prev"]::view-transition-old(root) { animation: vt-out-right var(--t-fast) var(--spline) both; }
+:root[data-motion="tab-left"]::view-transition-new(root),
+:root[data-motion="week-prev"]::view-transition-new(root) { animation: vt-in-left var(--t-slow) var(--spline) both; }
+:root[data-motion="tab-right"]::view-transition-old(root),
+:root[data-motion="week-next"]::view-transition-old(root) { animation: vt-out-left var(--t-fast) var(--spline) both; }
+:root[data-motion="tab-right"]::view-transition-new(root),
+:root[data-motion="week-next"]::view-transition-new(root) { animation: vt-in-right var(--t-slow) var(--spline) both; }
+
+:root[data-motion="fade"]::view-transition-old(root) { animation: vt-fade-out var(--t-fast) var(--spline) both; }
+:root[data-motion="fade"]::view-transition-new(root) { animation: vt-fade-in var(--t-med) var(--spline) both; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     transition: none !important;
@@ -1061,7 +1229,7 @@ button.row { cursor: pointer; }
   box-shadow: var(--shadow-dock);
 }
 .toast > span { flex: 1; min-width: 0; padding-top: 4px; }
-.toast .btn { height: 32px; padding: 0 14px; background: rgba(255, 255, 255, 0.14); color: var(--primary-ink); }
+.toast .btn { height: 32px; padding: 0 14px; background: rgba(255, 255, 255, 0.14); background: color-mix(in srgb, var(--primary-ink) 14%, transparent); color: var(--primary-ink); }
 
 /* Boot message and fatal screen. */
 .boot { padding: 20px 18px; color: var(--muted); }

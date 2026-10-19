@@ -121,8 +121,24 @@ every asset in `index.html`, to the same value.
 
 - The rule: the app never makes a training decision. It never moves a position,
   never advances a rung and never derives achievements.
-- Zinc greys plus one accent (`#eab308`), used only for "this week" and
-  "you're here". Oxanium throughout.
+- Zinc greys plus one accent, cherry red (`#d2042d` light, `#ef2b4f` dark),
+  used only for "this week" and "you're here". Buttons stay zinc. Oxanium
+  throughout. This is the Capsule language (2026-10-19), which replaced the
+  spec's yellow `#eab308`.
+- Light and dark themes: every colour is a token on `:root` with a dark value
+  in **both** dark blocks in `styles.css` (the `prefers-color-scheme` one and
+  `[data-theme="dark"]`). Plan > Appearance (Auto/Light/Dark) is stored under
+  `bwl-appearance` and applied before paint by the inline script in `index.html`.
+- A sparse grain (`--grain`) sits on the page ground only; cards and the dock
+  stay smooth.
+- Every interaction animates, and only on the spline tokens (`--spline`,
+  `--spline-move`, `--spline-spring`; durations `--t-fast/med/slow`). Never a
+  keyword or linear timing. `render()` wraps each re-render in a View
+  Transition whose kind (forward, back, tab, week, in place) sets
+  `data-motion` on `<html>`; in place, each visible block of the screen morphs.
+  Toggles and the segmented control animate first, then apply the change after
+  `SETTLE` ms in `ui.js`. A render that focuses a field skips the transition,
+  so iOS still raises the keyboard.
 - Destructive actions use `UI.twoStep`. Native `confirm()` is banned.
 - Every handler saves before it renders. The logger autosaves on each keystroke.
 - Everything is script-rendered, so each screen render is wrapped in try/catch.

@@ -5,7 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Bodyweight ladders</title>
 <meta name="description" content="A progression tracker for bodyweight strength training.">
-<meta name="theme-color" content="#f4f4f4">
+<meta name="theme-color" content="#f3f3f4">
+<meta name="color-scheme" content="light dark">
+<script>
+// Appearance before first paint: a pinned Light or Dark (Plan > Appearance), else follow the system.
+try {
+  var t = localStorage.getItem('bwl-appearance'), d = t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+  if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', d ? '#09090b' : '#f3f3f4');
+} catch (e) {}
+</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -14,14 +23,14 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-<link rel="stylesheet" href="styles.css?v=2.6">
+<link rel="stylesheet" href="styles.css?v=2.10">
 </head>
 <body>
 <noscript><p style="padding:20px">This tracker needs JavaScript to run.</p></noscript>
 <div id="boot" class="boot">Loading…</div>
 <div id="app"></div>
-<script src="data.js?v=2.6"></script>
-<script src="ui.js?v=2.6"></script>
-<script src="app.js?v=2.6"></script>
+<script src="data.js?v=2.10"></script>
+<script src="ui.js?v=2.10"></script>
+<script src="app.js?v=2.10"></script>
 </body>
 </html>
