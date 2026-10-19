@@ -40,7 +40,12 @@
   --seg: #e9e9eb;              /* segmented control track */
   --disabled-bg: #e4e4e7;
   --disabled-ink: #71717a;
-  --dock-active: rgba(9, 9, 11, 0.08);
+  /* The dock is dark in both themes: zinc-900 with light ink. */
+  --dock-bg: #18181b;
+  --dock-border: #18181b;
+  --dock-ink: #fafafa;
+  --dock-muted: #a1a1aa;
+  --dock-active: rgba(250, 250, 250, 0.12);
   --shadow-dock: 0 8px 24px rgba(9, 9, 11, 0.10), 0 1px 2px rgba(9, 9, 11, 0.06);
   /* Super-subtle, sparse grain on the page ground only. Cards and the dock stay smooth. */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.2 0 0 0 -0.76'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");
@@ -74,7 +79,7 @@
     --text: #fafafa; --muted: #a1a1aa; --soft: #d4d4d8; --ink-2: #a1a1aa; --idle: #71717a; --faint: #46464d;
     --primary: #fafafa; --primary-ink: #18181b; --accent: #ef2b4f; --accent-deep: #8a1528;
     --toggle-off: #3f3f46; --knob: #fafafa; --tertiary: #27272a; --seg: #1f1f23;
-    --disabled-bg: #27272a; --disabled-ink: #71717a; --dock-active: rgba(250, 250, 250, 0.10);
+    --disabled-bg: #27272a; --disabled-ink: #71717a; --dock-active: rgba(250, 250, 250, 0.10); --dock-border: #27272a;
     --shadow-dock: 0 8px 24px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4);
     --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.42  0 0 0 0 0.42  1.2 0 0 0 -0.74'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");
@@ -86,7 +91,7 @@
   --text: #fafafa; --muted: #a1a1aa; --soft: #d4d4d8; --ink-2: #a1a1aa; --idle: #71717a; --faint: #46464d;
   --primary: #fafafa; --primary-ink: #18181b; --accent: #ef2b4f; --accent-deep: #8a1528;
   --toggle-off: #3f3f46; --knob: #fafafa; --tertiary: #27272a; --seg: #1f1f23;
-  --disabled-bg: #27272a; --disabled-ink: #71717a; --dock-active: rgba(250, 250, 250, 0.10);
+  --disabled-bg: #27272a; --disabled-ink: #71717a; --dock-active: rgba(250, 250, 250, 0.10); --dock-border: #27272a;
   --shadow-dock: 0 8px 24px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4);
   --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.42  0 0 0 0 0.42  0 0 0 0 0.42  1.2 0 0 0 -0.74'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");
@@ -1032,8 +1037,8 @@ button.row { cursor: pointer; }
   gap: 4px;
   max-width: calc(100% - 32px);
   padding: 6px;
-  background: var(--card);
-  border: 1px solid var(--card-border);
+  background: var(--dock-bg);
+  border: 1px solid var(--dock-border);
   border-radius: 26px;
   box-shadow: var(--shadow-dock);
 }
@@ -1046,7 +1051,7 @@ button.row { cursor: pointer; }
   border: 0;
   border-radius: 18px;
   background: transparent;
-  color: var(--muted);
+  color: var(--dock-muted);
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
@@ -1055,9 +1060,10 @@ button.row { cursor: pointer; }
 .dock-tab.is-active {
   padding: 0 16px 0 12px;
   background: var(--dock-active);
-  color: var(--text);
+  color: var(--dock-ink);
 }
 .dock-tab .icon { flex: none; }
+.dock-tab:focus-visible { outline-color: var(--dock-ink); outline-offset: -2px; }   /* the global ring is dark */
 .dock-label {
   display: inline-block;
   max-width: 0;
@@ -1235,6 +1241,7 @@ button.row:active, .picker-opt:active, button.rung:active { transform: scale(0.9
 .note-text { font-size: 13px; line-height: 1.45; color: var(--muted); }
 .note-text.is-soft { color: var(--soft); font-size: 14px; }
 .note-text.is-center { text-align: center; padding: 0 8px; }
+.version-line { color: var(--faint); font-size: 12px; }
 .pad-x { padding: 0 4px; }
 .centre { align-items: center; }
 .pre { white-space: pre-wrap; overflow-wrap: anywhere; }

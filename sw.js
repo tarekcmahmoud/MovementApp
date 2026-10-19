@@ -2,13 +2,13 @@
    All paths are relative so this works unchanged whether the app is served from
    a domain root or from a GitHub Pages subdirectory. Bump CACHE on every deploy
    or returning phones will keep serving the old shell. */
-const CACHE = "bwl-v2-12";
+const CACHE = "bwl-v2-13";
 // index.html loads its scripts and stylesheet with ?v=<this>. A phone still
 // running an OLDER worker serves our own assets cache-first, so on the first
 // launch after a deploy it would pair the new index.html with the old cached
 // app.js. A new query string can never hit an old cache entry. Bump it in
 // index.html together with CACHE.
-const V = "?v=2.12";
+const V = "?v=2.13";
 
 const SHELL = [
   "./",
@@ -52,9 +52,12 @@ self.addEventListener("fetch", event => {
 
   // Launching the app: try the network so a deploy is picked up, fall back to
   // the cached shell when there's no signal (the gym basement case).
+  // no-cache: always ask the server, or the browser's own HTTP cache (GitHub
+  // Pages sets max-age=600) can hand back the old page for up to 10 minutes.
+  // A navigate-mode Request can't take options, so fetch by URL.
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req)
+      fetch(req.url, { cache: "no-cache", credentials: "same-origin" })
         .then(res => {
           const copy = res.clone();
           caches.open(CACHE).then(c => c.put("index.html", copy));

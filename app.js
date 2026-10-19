@@ -982,6 +982,13 @@
     });
   }
 
+  // The deployed version, read from app.js's own ?v= so there is no second number to bump.
+  function appVersion() {
+    var el = document.querySelector('script[src*="app.js"]');
+    var m = el && /[?&]v=([^&]+)/.exec(el.getAttribute('src'));
+    return m ? m[1] : 'unknown';
+  }
+
   function planScreen() {
     var cycle = Data.activeCycle();
     var ended = Data.endedCycles();
@@ -1056,6 +1063,7 @@
 
     body.push(appearanceCard());
     body.push(importCard());
+    body.push(h('p', { class: 'note-text is-center version-line' }, 'Version ' + appVersion()));
 
     return shell({ cls: 'is-airy has-dock', dock: 'plan', body: body });
   }
