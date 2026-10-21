@@ -41,6 +41,7 @@
    activeCycle() / endedCycles()   the active cycle / ended ones, newest start first
    sessionFor(cycleId, wk, slotId) session (completed preferred over draft) or null
    lastValues(workoutId, exId, excludeSessionId)   "Last 6" source, or null
+   lastEntry(workoutId, exId, excludeSessionId)    the whole entry behind it (sets, rpe), or null
    findExercise(exerciseId)        { cycle, workout, block, exercise } or null
    findRung(rungId)                { collection, category, ladder, rung, index } or null
    rungBadge(rungId)               { short, ladderName, index1, total, on, ... } or null
@@ -810,12 +811,12 @@ var Data = (function () {
     return null;
   };
 
-  // The reps from last time, for "Last 6". Most recent completed, non-deload
+  // The entry from last time: its sets give "Last 6", its rpe "Last 8". Most recent completed, non-deload
   // session of the same workout - any slot, any cycle, pre-cycle ones included.
   // Entries are matched by exercise id, then by rung link, then by name, each
   // pass over all candidate sessions before the next, so an exact match from a
   // little further back beats a loose one from yesterday.
-  Data.lastValues = function (workoutId, exerciseId, excludeSessionId) {
+  Data.lastEntry = function (workoutId, exerciseId, excludeSessionId) {
     var found = Data.findExercise(exerciseId), ex = found && found.exercise;
     var cands = indexed(Data.state.sessions).filter(function (c) {
       return c.s.completedAt && !c.s.deload && c.s.workoutId === workoutId && c.s.id !== excludeSessionId;
@@ -823,7 +824,7 @@ var Data = (function () {
     function pass(match) {
       for (var i = 0; i < cands.length; i++) {
         var es = cands[i].s.entries.filter(function (e) { return match(e) && anyValue(e.sets); });
-        if (es.length) return es[0].sets.slice();
+        if (es.length) return es[0];
       }
       return null;
     }
@@ -832,6 +833,10 @@ var Data = (function () {
     var nm = ex ? String(ex.name).trim().toLowerCase() : "";
     if (!hit && nm) hit = pass(function (e) { return String(e.name).trim().toLowerCase() === nm; });
     return hit;
+  };
+  Data.lastValues = function (workoutId, exerciseId, excludeSessionId) {
+    var en = Data.lastEntry(workoutId, exerciseId, excludeSessionId);
+    return en ? en.sets.slice() : null;
   };
 
   Data.findRung = function (rungId) {

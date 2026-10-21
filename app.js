@@ -54,6 +54,10 @@
   function dayLabel(d) { return DAY_LABEL[d] || (d ? cap(d) : '—'); }
   function dayRank(d) { var i = DAYS.indexOf(d); return i < 0 ? 100 : i; }
   function blockLetter(i) { return String.fromCharCode(65 + (i % 26)); }
+  // A workout has at most one warm-up / prep block (flagged warmup). It is always
+  // shown first, has no rungs and records nothing; the lettered blocks A, B... are the rest.
+  function warmupOf(w) { return w ? w.blocks.filter(function (b) { return b.warmup; })[0] || null : null; }
+  function mainBlocks(w) { return w ? w.blocks.filter(function (b) { return !b.warmup; }) : []; }
   function todayStamp() { return Data.todayISO(); }
 
   function cycleById(id) {
@@ -614,6 +618,7 @@
         entries: [], milestones: [], note: ''
       };
       if (workout) workout.blocks.forEach(function (b) {
+        if (b.warmup) return;   // nothing is recorded for warm-up / prep
         b.exercises.forEach(function (ex) { s.entries.push(newEntry(ex, b)); });
       });
       Data.state.sessions.unshift(s);
@@ -636,91 +641,150 @@
       saveNow();
     }
 
+    function onRpe(ex, block, value) {
+      var s = ensureSession();
+      entryFor(s, ex, block).rpe = value;
+      saveNow();
+    }
+
     function badgeEl(link) {
       var b = link ? Data.rungBadge(link) : null;
       if (!b || !b.on) return null;
       return UI.rungBadge((multiOn ? b.short + ' · ' : '') + b.ladderName + ' ' + b.index1 + '/' + b.total);
     }
-    function exCol(src) {
-      return h('div', { class: 'ex-col' },
-        h('span', { class: 'ex-name' }, src.name || 'Untitled'),
-        h('span', { class: 'ex-target' }, 'Target ' + (src.target || '—')),
-        src.note ? h('span', { class: 'note-pill' }, src.note) : null,
-        badgeEl(src.link));
-    }
-    function setInput(value, aria, onValue) {
+    function setInput(value, aria, onValue, extra) {
       var v = value == null ? '' : String(value);
       var numeric = v === '' || !isNaN(Number(v));   // an old free-text value must stay readable
-      return h('input', {
+      var attrs = {
         class: 'logger-input', type: numeric ? 'number' : 'text', inputmode: 'numeric',
         value: v, 'aria-label': aria, onInput: function (e) { onValue(e.target.value); }
+      };
+      Object.keys(extra || {}).forEach(function (k) { attrs[k] = extra[k]; });
+      return h('input', attrs);
+    }
+    function lastText(v) { return v != null && v !== '' ? 'Last ' + v : 'No previous'; }
+
+    // One block: its exercises listed first (tag, name, target and last time,
+    // note, ladder), then an inset grid with a column per exercise, a row per
+    // set or round, and an RPE row. items: [{ tag, src, sets(r), last(r),
+    // onSet(r, v), rpe, lastRpe, onRpe(v) }].
+    function blockCard(title, pillText, items, rows, label) {
+      var list = items.map(function (it) {
+        var lastAll = it.lastSets && it.lastSets.some(function (x) { return x !== '' && x != null; })
+          ? it.lastSets.filter(function (x) { return x !== '' && x != null; }).join(' · ') : null;
+        return h('div', { class: 'lx-ex' },
+          h('span', { class: 'lx-tag' }, it.tag),
+          h('div', { class: 'lx-ex-main' },
+            h('span', { class: 'lx-ex-name' }, it.src.name || 'Untitled'),
+            h('span', { class: 'lx-ex-sub' },
+              'Target ' + (it.src.target || '—') + ' · ' + (lastAll ? 'Last ' + lastAll : 'No previous')),
+            it.src.note || badgeEl(it.src.link)
+              ? h('div', { class: 'lx-ex-chips' },
+                it.src.note ? h('span', { class: 'note-pill' }, it.src.note) : null,
+                badgeEl(it.src.link))
+              : null));
+      });
+      var grid = [h('div', { class: 'lx-row lx-head' },
+        h('span', { class: 'lx-label' }),
+        items.map(function (it) { return h('span', { class: 'lx-col-tag' }, it.tag); }))];
+      for (var r = 0; r < rows; r++) (function (r) {
+        grid.push(h('div', { class: 'lx-row' },
+          h('span', { class: 'lx-label' }, label + (r + 1)),
+          items.map(function (it) {
+            var lastV = it.lastSets && it.lastSets[r] != null && it.lastSets[r] !== '' ? it.lastSets[r] : null;
+            return h('div', { class: 'lx-cell' },
+              setInput(it.sets(r), (it.src.name || 'Exercise') + ', ' + (label === 'R' ? 'round ' : 'set ') + (r + 1) +
+                (lastV != null ? ', last time ' + lastV : ''), function (v) { it.onSet(r, v); }),
+              h('span', { class: 'lx-last' }, lastText(lastV)));
+          })));
+      })(r);
+      grid.push(h('div', { class: 'lx-row lx-rpe' },
+        h('span', { class: 'lx-label' }, 'RPE'),
+        items.map(function (it) {
+          return h('div', { class: 'lx-cell' },
+            setInput(it.rpe, 'RPE for ' + (it.src.name || 'exercise') +
+              (it.lastRpe ? ', last time ' + it.lastRpe : ''), it.onRpe,
+              { placeholder: '1–10', min: '1', max: '10', class: 'logger-input is-rpe' }),
+            h('span', { class: 'lx-last' }, lastText(it.lastRpe)));
+        })));
+      return UI.card({
+        class: 'lx-card',
+        body: [
+          h('div', { class: 'between lx-head-row' },
+            h('span', { class: 'card-title', style: { padding: 0 } }, title),
+            UI.pill(pillText)),
+          h('div', { class: 'lx-list' }, list),
+          h('div', { class: 'lx-grid' + (items.length > 3 ? ' is-wide' : '') }, grid)
+        ]
+      });
+    }
+
+    // Warm-up / prep: the exercises as a list, nothing to record.
+    function warmupCard(b) {
+      var multi = b.exercises.length > 1;
+      return UI.card({
+        class: 'lx-card is-warmup',
+        body: [
+          h('div', { class: 'between lx-head-row' },
+            h('span', { class: 'card-title', style: { padding: 0 } }, 'Warm-up / prep'),
+            UI.pill('Nothing to log')),
+          h('div', { class: 'lx-list' }, b.exercises.map(function (ex, i) {
+            var src = ex;
+            return h('div', { class: 'lx-ex' },
+              h('span', { class: 'lx-tag is-light' }, 'W' + (multi ? (i + 1) : '')),
+              h('div', { class: 'lx-ex-main' },
+                h('span', { class: 'lx-ex-name' }, src.name || 'Untitled'),
+                src.target ? h('span', { class: 'lx-ex-sub' }, src.target) : null,
+                src.note ? h('div', { class: 'lx-ex-chips' }, h('span', { class: 'note-pill' }, src.note)) : null));
+          }))
+        ]
       });
     }
 
     var claimed = [];
     var cards = [];
 
-    if (workout) workout.blocks.forEach(function (b, bi) {
+    var warm = warmupOf(workout);
+    if (warm && warm.exercises.length) cards.push(warmupCard(warm));
+    mainBlocks(workout).forEach(function (b, bi) {
       if (!b.exercises.length) return;
       var multi = b.exercises.length > 1;
-      var pairs = b.exercises.map(function (ex) {
+      var items = b.exercises.map(function (ex, i) {
         var en = session ? session.entries.filter(function (e) { return e.exerciseId === ex.id; })[0] : null;
         if (en) claimed.push(en);
-        var last = Data.lastValues(slot.workoutId, ex.id, session && session.id);
-        return { ex: ex, en: en, last: last };
+        var last = Data.lastEntry(slot.workoutId, ex.id, session && session.id);
+        return {
+          tag: blockLetter(bi) + (multi ? (i + 1) : ''),
+          src: completed && en ? en : ex,
+          en: en,
+          lastSets: last ? last.sets : null,
+          lastRpe: last && last.rpe !== '' ? last.rpe : null,
+          sets: function (r) { return en ? en.sets[r] : ''; },
+          rpe: en ? en.rpe : '',
+          onSet: function (r, v) { onSet(ex, b, r, v); },
+          onRpe: function (v) { onRpe(ex, b, v); }
+        };
       });
-      var rows = Math.max(+b.sets || 1, Math.max.apply(null, pairs.map(function (p) { return p.en ? p.en.sets.length : 0; })));
-      var heads = pairs.map(function (p) { return exCol(completed && p.en ? p.en : p.ex); });
-      var setRows = [];
-      for (var r = 0; r < rows; r++) (function (r) {
-        setRows.push(h('div', { class: 'set-row' },
-          h('span', { class: 'set-label' }, (multi ? 'R' : 'S') + (r + 1)),
-          pairs.map(function (p) {
-            var lastV = p.last && p.last[r] != null && p.last[r] !== '' ? p.last[r] : null;
-            var cur = p.en ? p.en.sets[r] : '';
-            return h('div', { class: 'set-cell' },
-              setInput(cur, (p.ex.name || 'Exercise') + ', ' + (multi ? 'round ' : 'set ') + (r + 1) +
-                (lastV != null ? ', last time ' + lastV : ''),
-                function (v) { onSet(p.ex, b, r, v); }),
-              h('span', { class: 'set-last' }, lastV != null ? 'Last ' + lastV : 'No previous'));
-          })));
-      })(r);
-      cards.push(UI.card({
-        body: [
-          h('div', { class: 'between' },
-            h('span', { class: 'card-title', style: { padding: 0 } }, b.name || 'Block ' + blockLetter(bi)),
-            UI.pill(multi ? 'Superset · ' + plural(b.sets, 'round', 'rounds') : plural(b.sets, 'set', 'sets'))),
-          // 3+ exercises side by side would squeeze each column too narrow to
-          // read or tap, so those blocks scroll sideways with fixed-width columns.
-          h('div', { class: 'ex-scroll' + (b.exercises.length > 2 ? ' is-wide' : '') },
-            h('div', { class: 'ex-cols' }, h('div', { class: 'ex-gutter' }), heads),
-            setRows)
-        ]
-      }));
+      var rows = Math.max(+b.sets || 1, Math.max.apply(null, items.map(function (it) { return it.en ? it.en.sets.length : 0; })));
+      cards.push(blockCard(b.name || 'Block ' + blockLetter(bi),
+        multi ? 'Superset · ' + plural(b.sets, 'round', 'rounds') : plural(b.sets, 'set', 'sets'),
+        items, rows, multi ? 'R' : 'S'));
     });
 
     // Entries the workout no longer has an exercise for stay visible and editable.
     var orphans = session ? session.entries.filter(function (e) { return claimed.indexOf(e) < 0; }) : [];
     if (orphans.length) {
-      cards.push(UI.card({
-        body: [
-          h('div', { class: 'between' },
-            h('span', { class: 'card-title', style: { padding: 0 } }, 'Other logged exercises'),
-            UI.pill('Not in this workout')),
-          orphans.map(function (en) {
-            var rows2 = en.sets.map(function (v, r) {
-              return h('div', { class: 'set-row' },
-                h('span', { class: 'set-label' }, 'S' + (r + 1)),
-                h('div', { class: 'set-cell' },
-                  setInput(v, (en.name || 'Exercise') + ', set ' + (r + 1), function (val) {
-                    en.sets[r] = val;
-                    saveNow();
-                  })));
-            });
-            return h('div', { class: 'stack', style: { gap: '8px' } }, exCol(en), rows2);
-          })
-        ]
-      }));
+      cards.push(blockCard('Other logged exercises', 'Not in this workout',
+        orphans.map(function (en, i) {
+          return {
+            tag: String(i + 1), src: en, en: en, lastSets: null, lastRpe: null,
+            sets: function (r) { return en.sets[r]; },
+            rpe: en.rpe,
+            onSet: function (r, v) { while (en.sets.length <= r) en.sets.push(''); en.sets[r] = v; saveNow(); },
+            onRpe: function (v) { en.rpe = v; saveNow(); }
+          };
+        }),
+        Math.max.apply(null, orphans.map(function (en) { return en.sets.length || 1; })), 'S'));
     }
 
     if (!cards.length) {
@@ -1192,6 +1256,7 @@
 
   function blankExercise() { return { id: Data.uid(), name: '', target: '', note: '', link: null }; }
   function blankBlock(letter) { return { id: Data.uid(), name: 'Block ' + letter, sets: 3, exercises: [blankExercise()] }; }
+  function blankWarmup() { return { id: Data.uid(), name: 'Warm-up', warmup: true, sets: 1, exercises: [blankExercise()] }; }
 
   function slotDays(cycle, workoutId) {
     var out = [];
@@ -1259,7 +1324,7 @@
     return h('div', { class: 'picker-list', role: 'listbox' }, kids);
   }
 
-  function exerciseEditor(route, block, ex, tag) {
+  function exerciseEditor(route, block, ex, tag, noRung) {
     var open = route.pickFor === ex.id;
     var label = ex.link ? (rungLabel(ex.link) || 'Unknown rung') : '';
     var nameIn = UI.input({
@@ -1268,7 +1333,7 @@
     });
     if (route.focusId === ex.id) { nameIn.setAttribute('data-focus', ''); route.focusId = null; }
     var picker = null;
-    if (activeCollections().length) {
+    if (!noRung && activeCollections().length) {
       picker = h('div', { class: 'field' },
         h('span', { class: 'field-label' }, 'Rung ', h('span', { class: 'muted' }, '· optional')),
         h('button', {
@@ -1338,6 +1403,32 @@
           }
         }),
         UI.twoStep('Remove block', 'Really remove block?', function () {
+          route.draft.blocks = route.draft.blocks.filter(function (b) { return b !== block; });
+          render();
+        }, { block: true, small: true })));
+  }
+
+  // The warm-up / prep card: exercises with a target and note, no sets, no rungs.
+  function warmupEditor(route, block) {
+    return h('div', { class: 'card is-warmup' },
+      h('div', { class: 'block-head' },
+        h('div', { class: 'block-label' }, 'Warm-up / prep'),
+        h('p', { class: 'note-text' }, 'Listed at the top of the session. Nothing to record.')),
+      block.exercises.map(function (ex, ei) {
+        return exerciseEditor(route, block, ex, 'W' + (block.exercises.length > 1 ? (ei + 1) : ''), true);
+      }),
+      h('div', { class: 'card-foot is-col', style: { marginTop: '4px' } },
+        UI.btn('Add exercise', {
+          variant: 'tertiary', block: true, icon: 'plus',
+          onClick: function () {
+            var ex = blankExercise();
+            block.exercises.push(ex);
+            route.focusId = ex.id;
+            route.afterRender = focusMarked;
+            render();
+          }
+        }),
+        UI.twoStep('Remove warm-up', 'Really remove warm-up?', function () {
           route.draft.blocks = route.draft.blocks.filter(function (b) { return b !== block; });
           render();
         }, { block: true, small: true })));
@@ -1450,11 +1541,24 @@
         onInput: function (e) { d.name = e.target.value; titleEl.textContent = d.name || 'Untitled workout'; }
       }))));
     body.push(daysCard(route, cycle));
-    d.blocks.forEach(function (b, bi) { body.push(blockEditor(route, b, bi)); });
+    var warm = warmupOf(d);
+    if (warm) body.push(warmupEditor(route, warm));
+    else body.push(h('div', { class: 'stack centre' },
+      UI.btn('Add warm-up', {
+        variant: 'outline', icon: 'plus',
+        onClick: function () {
+          var w = blankWarmup();
+          d.blocks.unshift(w);
+          route.focusId = w.exercises[0].id;
+          route.afterRender = focusMarked;
+          render();
+        }
+      })));
+    mainBlocks(d).forEach(function (b, bi) { body.push(blockEditor(route, b, bi)); });
     body.push(h('div', { class: 'stack centre' },
       UI.btn('Add block', {
         large: true, icon: 'plus',
-        onClick: function () { d.blocks.push(blankBlock(blockLetter(d.blocks.length))); render(); }
+        onClick: function () { d.blocks.push(blankBlock(blockLetter(mainBlocks(d).length))); render(); }
       })));
     if (!route.isNew) {
       var logged = 0;

@@ -813,73 +813,88 @@ button.row { cursor: pointer; }
 .cycle-name { font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
 .screen-kicker { font-size: 13px; line-height: 1.35; color: var(--muted); }
 
-/* ---------- Logger ---------- */
+/* ---------- Logger ----------
+   Each block lists its exercises first, then logs them in an inset grid below:
+   a column per exercise, a row per set or round, and an RPE row. */
 
-.ex-cols { display: flex; gap: 8px; }
-.ex-gutter { flex: none; width: 28px; }
-.ex-col {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-.ex-name { font-size: 14px; font-weight: 500; line-height: 1.25; }
-.ex-target { font-size: 13px; color: var(--muted); }
 .note-pill {
   font-size: 12px;
   line-height: 1.4;
   color: var(--soft);
   background: var(--inset);
   border-radius: var(--r-pill);
-  padding: 1px 8px;
+  padding: 2px 9px;
 }
 
-.set-row { display: flex; gap: 8px; align-items: flex-start; }
-.set-label {
+.lx-card .card-body { gap: 0; padding-bottom: 12px; }
+.lx-head-row { align-items: center; padding-bottom: 4px; }
+.lx-card .lx-list { display: flex; flex-direction: column; margin-top: 0; }
+.lx-ex {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+.lx-tag {
   flex: none;
-  width: 28px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-ink);
+  background: var(--primary);
+  border-radius: var(--r-pill);
+}
+.lx-ex-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.lx-ex-name { font-size: 15px; font-weight: 600; line-height: 1.25; }
+.lx-ex-sub { font-size: 13px; color: var(--muted); }
+.lx-ex-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* The inset grid. It bleeds 6px past the card's 18px padding, as in the trial. */
+.lx-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px -6px 0;
+  padding: 10px 10px 12px;
+  background: var(--inset);
+  border-radius: var(--r-inset);
+}
+.lx-row { display: flex; gap: 8px; align-items: flex-start; }
+.lx-label {
+  flex: none;
+  width: 34px;
   height: 44px;
   display: flex;
   align-items: center;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--muted);
 }
-.set-cell { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-.set-last { padding-left: 6px; font-size: 12px; line-height: 1.3; color: var(--muted); }
+.lx-head { margin-bottom: -2px; }
+.lx-head .lx-label { height: auto; }
+.lx-col-tag { flex: 1 1 0; min-width: 0; text-align: center; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.lx-cell { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.lx-cell .logger-input { text-align: center; }
+.lx-last { font-size: 11px; line-height: 1.3; color: var(--muted); }
+.lx-rpe { margin-top: 2px; padding-top: 12px; border-top: 1px dashed var(--toggle-off); }
+.lx-rpe .lx-label { color: var(--text); }
+.logger-input.is-rpe { background: var(--foot); border-color: var(--toggle-off); }
+.logger-input.is-rpe::placeholder { color: var(--idle); }
 
-/* A block's exercise columns and set rows scroll together. With 3+ exercises
-   the columns keep a fixed width and the block scrolls sideways instead of
-   compressing; it bleeds to the card's edges so the next column peeks in as a
-   hint, and the R1/R2 labels stay pinned on the left. */
-.ex-scroll { display: flex; flex-direction: column; }
-.ex-scroll > * + * { margin-top: 12px; }
-.ex-scroll.is-wide {
-  margin-left: -18px;
-  margin-right: -18px;
-  padding: 0 18px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-padding-left: 54px;
-  scrollbar-width: none;
-}
-.ex-scroll.is-wide::-webkit-scrollbar { display: none; }
-.ex-scroll.is-wide > * { width: max-content; min-width: 100%; }
-.ex-scroll.is-wide .ex-col,
-.ex-scroll.is-wide .set-cell { flex: 0 0 128px; }
-.ex-scroll.is-wide .ex-gutter,
-.ex-scroll.is-wide .set-label {
-  position: sticky;
-  left: -18px;
-  z-index: 1;
-  width: 46px;
-  margin-left: -18px;
-  padding-left: 18px;
-  background: var(--card);
-  box-shadow: 8px 0 0 var(--card);   /* covers the column gap as content slides under */
-}
+/* Warm-up / prep: a list only. The last row needs no divider, and its tags are light. */
+.lx-card.is-warmup .lx-ex:last-child { border-bottom: 0; padding-bottom: 0; }
+.lx-tag.is-light { color: var(--soft); background: var(--inset); }
+
+/* 4+ exercises: columns keep a usable width and the grid scrolls sideways. */
+.lx-grid.is-wide { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none; }
+.lx-grid.is-wide::-webkit-scrollbar { display: none; }
+.lx-grid.is-wide .lx-row { width: max-content; min-width: 100%; }
+.lx-grid.is-wide .lx-cell, .lx-grid.is-wide .lx-col-tag { flex: 0 0 72px; }
 
 /* Rung picker (Workout editor, "Rung - optional") */
 .picker-btn {
