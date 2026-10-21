@@ -11,7 +11,7 @@
 
   // Hugeicons-style paths (24x24 grid, stroke 1.5, round caps and joins).
   // back, forward, close, plus, check, week, plan, ladder and updown are copied from
-  // docs/v2/prototype.html. link and export are drawn here, not taken from Hugeicons.
+  // docs/v2/prototype.html. link, export and timer are drawn here, not taken from Hugeicons.
   var PATHS = {
     back: ['M15 6C15 6 9 10.4189 9 12C9 13.5812 15 18 15 18'],
     forward: ['M9 6C9 6 15 10.4189 15 12C15 13.5812 9 18 9 18'],
@@ -37,7 +37,8 @@
     export: [
       'M12 3V15M12 3L8 7.5M12 3L16 7.5',
       'M4 14V18A2 2 0 0 0 6 20H18A2 2 0 0 0 20 18V14'
-    ]
+    ],
+    timer: ['M20 13A8 8 0 1 1 4 13A8 8 0 1 1 20 13Z', 'M12 9V13L14 15M10 2H14']
   };
   PATHS.chevron = PATHS.forward;
 

@@ -56,6 +56,11 @@
   function blockLetter(i) { return String.fromCharCode(65 + (i % 26)); }
   // A workout has at most one warm-up / prep block (flagged warmup). It is always
   // shown first, has no rungs and records nothing; the lettered blocks A, B... are the rest.
+  // A block's rest between sets or rounds, as typed ("90s", "2 min"). A bare number means seconds.
+  function restText(v) {
+    v = String(v == null ? '' : v).trim();
+    return /^\d+$/.test(v) ? v + 's' : v;
+  }
   function warmupOf(w) { return w ? w.blocks.filter(function (b) { return b.warmup; })[0] || null : null; }
   function mainBlocks(w) { return w ? w.blocks.filter(function (b) { return !b.warmup; }) : []; }
   function todayStamp() { return Data.todayISO(); }
@@ -668,7 +673,7 @@
     // note, ladder), then an inset grid with a column per exercise, a row per
     // set or round, and an RPE row. items: [{ tag, src, sets(r), last(r),
     // onSet(r, v), rpe, lastRpe, onRpe(v) }].
-    function blockCard(title, pillText, items, rows, label) {
+    function blockCard(title, pillText, items, rows, label, rest) {
       var list = items.map(function (it) {
         var lastAll = it.lastSets && it.lastSets.some(function (x) { return x !== '' && x != null; })
           ? it.lastSets.filter(function (x) { return x !== '' && x != null; }).join(' · ') : null;
@@ -697,6 +702,12 @@
                 (lastV != null ? ', last time ' + lastV : ''), function (v) { it.onSet(r, v); }),
               h('span', { class: 'lx-last' }, lastText(lastV)));
           })));
+        if (rest && r < rows - 1) {
+          grid.push(h('div', { class: 'lx-rest', 'aria-label': 'Rest ' + rest },
+            h('span', { class: 'lx-rest-line' }),
+            h('span', { class: 'lx-rest-text' }, UI.icon('timer', 13, 1.75), 'Rest ' + rest),
+            h('span', { class: 'lx-rest-line' })));
+        }
       })(r);
       grid.push(h('div', { class: 'lx-row lx-rpe' },
         h('span', { class: 'lx-label' }, 'RPE'),
@@ -766,9 +777,11 @@
         };
       });
       var rows = Math.max(+b.sets || 1, Math.max.apply(null, items.map(function (it) { return it.en ? it.en.sets.length : 0; })));
+      var rest = restText(b.rest);
       cards.push(blockCard(b.name || 'Block ' + blockLetter(bi),
-        multi ? 'Superset · ' + plural(b.sets, 'round', 'rounds') : plural(b.sets, 'set', 'sets'),
-        items, rows, multi ? 'R' : 'S'));
+        (multi ? 'Superset · ' + plural(b.sets, 'round', 'rounds') : plural(b.sets, 'set', 'sets')) +
+          (rest ? ' · rest ' + rest : ''),
+        items, rows, multi ? 'R' : 'S', rest));
     });
 
     // Entries the workout no longer has an exercise for stay visible and editable.
@@ -1381,13 +1394,21 @@
         e.target.value = block.sets;
       }
     });
+    var restIn = UI.input({
+      value: block.rest || '', placeholder: '90s', label: 'Rest between ' + (multi ? 'rounds' : 'sets'),
+      onInput: function (e) {
+        var v = e.target.value.trim();
+        if (v) block.rest = v; else delete block.rest;   // no rest set: the field is absent
+      }
+    });
     return h('div', { class: 'card' },
       h('div', { class: 'block-head' },
         h('div', { class: 'block-label' },
           'Block ' + blockLetter(bi),
           multi ? h('span', { class: 'pill' }, h('span', { class: 'pill-dot dot-dark' }), 'Superset') : null),
         h('div', { class: 'name-row' }, nameIn,
-          h('div', { class: 'sets-box' }, setsIn, h('span', {}, multi ? 'Rounds' : 'Sets')))),
+          h('div', { class: 'sets-box' }, setsIn, h('span', {}, multi ? 'Rounds' : 'Sets')),
+          h('div', { class: 'sets-box is-rest' }, restIn, h('span', {}, 'Rest')))),
       block.exercises.map(function (ex, ei) {
         return exerciseEditor(route, block, ex, blockLetter(bi) + (multi ? (ei + 1) : ''));
       }),

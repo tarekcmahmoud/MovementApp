@@ -886,6 +886,11 @@ button.row { cursor: pointer; }
 .logger-input.is-rpe { background: var(--foot); border-color: var(--toggle-off); }
 .logger-input.is-rpe::placeholder { color: var(--idle); }
 
+/* Rest between rows: a quiet rule with the block's rest in the middle, under the inputs. */
+.lx-rest { display: flex; align-items: center; gap: 8px; padding: 0 0 0 42px; margin: -2px 0; }
+.lx-rest-line { flex: 1; height: 1px; background: var(--toggle-off); }
+.lx-rest-text { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: var(--ink-2); }
+
 /* Warm-up / prep: a list only. The last row needs no divider, and its tags are light. */
 .lx-card.is-warmup .lx-ex:last-child { border-bottom: 0; padding-bottom: 0; }
 .lx-tag.is-light { color: var(--soft); background: var(--inset); }
@@ -1304,6 +1309,8 @@ button.row:active, .picker-opt:active, button.rung:active { transform: scale(0.9
 .sets-box { flex: none; width: 56px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .sets-box .input { width: 56px; padding: 0 6px; text-align: center; font-weight: 600; background: var(--inset); }
 .sets-box span { font-size: 12px; color: var(--muted); }
+.sets-box.is-rest { width: 64px; }
+.sets-box.is-rest .input { width: 64px; }
 .ex-edit {
   margin: 0 18px;
   padding: 16px 0;
